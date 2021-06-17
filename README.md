@@ -34,7 +34,7 @@ This model utilizes MediaPipe's hand tracking functions to get hand landmarks(re
 - Libraries used: OpenCV, MediaPipe, os, numpy, time
 - Index finger tip's landmark is used to draw on the canvas.
 
-The steps and tacks have been explicitly mentioned in the comments of the code.
+**The steps and tacks have been explicitly mentioned in the comments of the code.**
 
 
 
