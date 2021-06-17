@@ -4,11 +4,11 @@
 
 - Draw stuff
 
-  <img src="Utilities/Images/2.gif" style="float: left;" alt="drawing" width="400"/>
+  <img src="Utilities/Images/1.gif" style="float: left;" alt="drawing" width="400"/>
 
 - Change colors
 
-  <img src="Utilities/Images/1.gif" style="float: left;" alt="drawing" width="400"/>
+  <img src="Utilities/Images/2.gif" style="float: left;" alt="drawing" width="400"/>
 
 - Erase
 
