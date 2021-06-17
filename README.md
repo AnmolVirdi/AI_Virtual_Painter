@@ -37,5 +37,5 @@ This model utilizes MediaPipe's hand tracking functions to get hand landmarks(re
 
 **The steps and tacks have been explicitly mentioned in the comments of the code.**
 
-***Dockerfile* has been provided, but Linux environment(Ubuntu)**
+***Dockerfile* has been provided, for Linux environment(Ubuntu)**
 
