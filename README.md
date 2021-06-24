@@ -2,19 +2,19 @@
 
 - Allows users to paint using their index finger, while in a video.
 
-- Draw stuff
+- Draw stuff.
 
   <img src="Utilities/Images/1.gif" style="float: left;" alt="drawing" width="400"/>
 
-- Change colors
+- Change colors.
 
   <img src="Utilities/Images/2.gif" style="float: left;" alt="drawing" width="400"/>
 
-- Erase
+- Erase.
 
   <img src="Utilities/Images/3.gif" style="float: left;" alt="drawing" width="400"/>
 
-- Clear the screen
+- Clear the screen.
 
   <img src="Utilities/Images/4.gif" style="float: left;" alt="drawing" width="350"/>
 
