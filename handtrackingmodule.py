@@ -14,15 +14,16 @@ import time
 class handDetector():
 
     #Constructor, with some default values
-    def __init__(self, mode=False, maxHands=2, detectionCon=0.5, trackCon=0.5):
+    def __init__(self, mode=False, maxHands=2, detectionCon=0.5, modelComplexity=1, trackCon=0.5):
         self.mode = mode
         self.maxHands = maxHands
         self.detectionCon = detectionCon
+        self.modelComplex = modelComplexity
         self.trackCon=trackCon
 
         #Assigning the hand detector as well as hand landmarks(points) detector funtions to variables of the class
         self.mpHands= mp.solutions.hands
-        self.hands = self.mpHands.Hands(self.mode,self.maxHands,self.detectionCon,self.trackCon)
+        self.hands = self.mpHands.Hands(self.mode,self.maxHands,self.modelComplex,self.detectionCon,self.trackCon)
         self.mpDraw = mp.solutions.drawing_utils
 
 
