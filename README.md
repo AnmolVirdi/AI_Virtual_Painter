@@ -1,7 +1,7 @@
-# HOW TO INSTALL
+# How to install
 ```python3 -m pip install --ignore-installed -r requirements.txt```
 
-# HOW TO RUN
+# How to run
 ```python3 main.py```
 
 
