@@ -1,6 +1,10 @@
 # HOW TO INSTALL
 ```python3 -m pip install --ignore-installed -r requirements.txt```
 
+# HOW TO RUN
+```python3 main.py```
+
+
 # AI BASED VIRTUAL PAINTER
 
 - Allows users to paint using their index finger, while in a video.
