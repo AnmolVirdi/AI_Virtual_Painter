@@ -4,13 +4,14 @@ By Anmol Virdi (Self-Authored)
 Created on 17/06/21
 """
 
-
-#Importing OpenCV, numpy, time, os libraries
 import cv2
 import numpy as np
 import time
 import os
 import handtrackingmodule as htm #mediapipe library used in this module
+import pygame
+
+pygame.init()
 
 #Importing header images using os functions
 folder_location = "Utilities/Header"
@@ -42,8 +43,23 @@ detector = htm.handDetector(detectionCon=0.85)
 #Numpy array with zeros(representing black screen) similar to the dimensions of original video frames
 imageCanvas = np.zeros((720,1280,3),np.uint8)
 
+clock = pygame.time.Clock()
+
+def save_image(matrix):
+    timestamp = time.time()
+    filename = f'images/{timestamp}.png'
+    cv2.imwrite(filename, matrix)
+    return 
+
 #Displaying the video, frame by frame
-while True:
+running = True
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.KEYDOWN and pygame.key.name(event.key) == 's':
+            save_image(imageCanvas)
+        if event.type == pygame.KEYDOWN and pygame.key.name(event.key) == 'q':
+            running = False
+
     #Importing main image using read() function
     success, img = vCap.read()
     img = cv2.flip(img, 1) #flipping the video, to compensate lateral inversion
@@ -139,6 +155,17 @@ while True:
 
     cv2.imshow("Painter",img)
 
+    
+
+    #SAVE PICTURE
+    #if cv2.waitKey(1) & 0xFF == ord('s'):
+    #    print("saving image")
+    #    save_image(imageCanvas)
+
     #TO TERMINATE THE PROGRAM, PRESS q
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-          break
+    #if cv2.waitKey(1) & 0xFF == ord('q'):
+    #    break
+        
+
+pygame.quit()
+exit()
