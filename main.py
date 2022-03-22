@@ -43,22 +43,41 @@ detector = htm.handDetector(detectionCon=0.85)
 #Numpy array with zeros(representing black screen) similar to the dimensions of original video frames
 imageCanvas = np.zeros((720,1280,3),np.uint8)
 
-clock = pygame.time.Clock()
-
 def save_image(matrix):
     timestamp = time.time()
     filename = f'images/{timestamp}.png'
     cv2.imwrite(filename, matrix)
     return 
 
+class Brush:
+    def __init__(self, size):
+        self.size = size
+    def increase(self):
+        if self.size < 180:
+            self.size += 5
+    def decrease(self):
+        if self.size > 10:
+            self.size -= 5
+
+brush = Brush(20)
+
 #Displaying the video, frame by frame
 running = True
 while running:
+
+    #keyboard events
     for event in pygame.event.get():
+        #Save image
         if event.type == pygame.KEYDOWN and pygame.key.name(event.key) == 's':
             save_image(imageCanvas)
+        #Quit
         if event.type == pygame.KEYDOWN and pygame.key.name(event.key) == 'q':
             running = False
+
+    #increase/decrease brush size
+    key_input = pygame.key.get_pressed()   
+    if key_input[pygame.K_UP]: brush.increase()
+    if key_input[pygame.K_DOWN]: brush.decrease()
 
     #Importing main image using read() function
     success, img = vCap.read()
@@ -106,12 +125,17 @@ while running:
                 elif 950<x1<1200:
                     headerImage=overlayList[3]
                     drawColor=(0,0,0)
+                #TODO change x's
+                #This will increaase and decrease the brush size
+                elif x1 > 1200: brush.increase()
+                elif x1 > 12000: brush.decrease()
+
             #Updating the selected color
-            cv2.circle(img, (cx,cy), 25, drawColor, cv2.FILLED)
+            cv2.circle(img, (cx,cy), 1, drawColor, brush.size)
 
         #Drawing mode when only index finger is Up
         if fingers[1]==0 and fingers[2]==1:
-            cv2.circle(img,(x1,y1), 15,drawColor,cv2.FILLED)
+            cv2.circle(img,(x1,y1), 1, drawColor, brush.size + 15)
             #Drawing mode
             #Basically, we'll be drawing random lines which are actually tiny cv2.lines on loop
 
@@ -119,14 +143,12 @@ while running:
             if xx==0 and yy==0:
                 xx,yy=x1,y1;
 
-            #Eraser functionality
-            if drawColor==(0,0,0):
-                cv2.line(img,(xx,yy),(x1,y1),drawColor,25)
-                cv2.line(imageCanvas,(xx,yy),(x1,y1),drawColor,25)
-            #Color functionality
-            else:
-                cv2.line(img,(xx,yy),(x1,y1),drawColor,15)
-                cv2.line(imageCanvas,(xx,yy),(x1,y1),drawColor,15)
+            cv2.line(img,(xx,yy),(x1,y1),drawColor, brush.size)
+            cv2.line(imageCanvas,(xx,yy),(x1,y1),drawColor, brush.size)
+
+        #midle finder up
+        if fingers[2]==0 and not(False in [fingers[x]==1 for x in [0, 1, 3, 4]]):
+            print("mal comportado")
 
         #updating the reference points
         xx,yy=x1,y1
@@ -154,18 +176,6 @@ while running:
     img[0:125,0:1280]=headerImage
 
     cv2.imshow("Painter",img)
-
-    
-
-    #SAVE PICTURE
-    #if cv2.waitKey(1) & 0xFF == ord('s'):
-    #    print("saving image")
-    #    save_image(imageCanvas)
-
-    #TO TERMINATE THE PROGRAM, PRESS q
-    #if cv2.waitKey(1) & 0xFF == ord('q'):
-    #    break
-        
 
 pygame.quit()
 exit()
