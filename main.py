@@ -81,15 +81,14 @@ while running:
 
     #Importing main image using read() function
     success, img = vCap.read()
-    img = cv2.flip(img, 1) #flipping the video, to compensate lateral inversion
+    captImg = cv2.flip(img, 1)
+    img = captImg #flipping the video, to compensate lateral inversion
 
     #Finding Hand Landmarks using handtrackingmodule
-    img = detector.findHands(img)
+    img = detector.findHands(img, img, draw=False)
     landmarkList = detector.findPosition(img, draw=False)
 
     if (len(landmarkList) != 0):
-        #print(landmarkList)
-
         #index finger tip coordinates(landmark number 8)
         x1,y1 = landmarkList[8][1],landmarkList[8][2]
 
@@ -168,6 +167,9 @@ while running:
 
     #Adding the original color to the inscribed region using bitwise_or operations
     img = cv2.bitwise_or(img,imageCanvas)
+
+    #Adding hand landmarks
+    img = detector.findHands(img, captImg)
 
     ##########################################################################################
 

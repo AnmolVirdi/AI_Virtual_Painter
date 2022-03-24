@@ -8,7 +8,7 @@ Created on 17/06/21
 import cv2
 import mediapipe as mp
 import time
-
+import numpy as np
 
 #Creating a Class/prototype
 class handDetector():
@@ -28,15 +28,16 @@ class handDetector():
 
 
     #function to detect hands and place/draw landmarks on them
-    def findHands(self, img, draw=True):
-        img1 = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    def findHands(self, img, videoCap, draw=True):
+        img1 = cv2.cvtColor(videoCap, cv2.COLOR_BGR2RGB)
         self.results =  self.hands.process(img1)
         #print(results.multi_hand_landmarks)
         if self.results.multi_hand_landmarks:
             for handLms in self.results.multi_hand_landmarks:
                 if draw:
-                    self.mpDraw.draw_landmarks(img, handLms, self.mpHands.HAND_CONNECTIONS)
-
+                    self.mpDraw.draw_landmarks(img, handLms, self.mpHands.HAND_CONNECTIONS, 
+                        self.mpDraw.DrawingSpec(color=(245,117,66), thickness=2, circle_radius=2), #color of points
+                        self.mpDraw.DrawingSpec(color=(245,66,230), thickness=2, circle_radius=2)) #color of connections
         return img
 
     #Function to find coordinates of all the landmarks of a particular hand(default= hand number 0). Returns a list of all of them.
