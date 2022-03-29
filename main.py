@@ -1,13 +1,6 @@
-"""
-AI VIRTUAL PAINTER
-By Anmol Virdi (Self-Authored)
-Created on 17/06/21
-"""
-
 import cv2
 import numpy as np
 import time
-import os
 import handtrackingmodule as htm #mediapipe library used in this module
 import pygame
 
@@ -15,17 +8,10 @@ pygame.init()
 
 #Importing header images using os functions
 folder_location = "Utilities/Header"
-myList = os.listdir(folder_location)
-print(myList) #displays name of all those images that will be used in the header
 
-#Creating a list to store all those images as variables
-overlayList=[]
-for imPath in myList:
-    image = cv2.imread(f'{folder_location}/{imPath}')
-    overlayList.append(image) #adding images to the list, one by one.
+headerImage = cv2.imread(f'{folder_location}/header.png') #setting default header image
 
-headerImage = overlayList[0] #setting default header image
-drawColor = (0,0,255) #Default color
+drawColor = (45,45,240) #Default color
 xx,yy=0,0 #used as reference coordinates during drawing mode
 
 
@@ -64,7 +50,6 @@ brush = Brush(20)
 #Displaying the video, frame by frame
 running = True
 while running:
-
     #keyboard events
     for event in pygame.event.get():
         #Save image
@@ -88,6 +73,12 @@ while running:
     img = detector.findHands(img, img, draw=False)
     landmarkList = detector.findPosition(img, draw=False)
 
+    #Setting the header image in the main window
+    #Inserting header image on the main window (Header size:1280x100)
+
+    overlay=cv2.addWeighted(img[0:100, 0:1280],0.2,headerImage,0.8, 1)
+    img[0:100, 0:1280] = overlay
+
     if (len(landmarkList) != 0):
         #index finger tip coordinates(landmark number 8)
         x1,y1 = landmarkList[8][1],landmarkList[8][2]
@@ -107,27 +98,27 @@ while running:
 
             #color selections(In the header)
             #Whichever brush_color(region) is selected, it'll get updated in the main window
-            if y1<125:
+            if y1<100:
                 #Now we'll divide the whole header(1280 width) into the regions of those brushes and eraser, and change our color accordingly.
                 #Whichever region is selected, the corresponding color as well as headerImage is opted.
-                if 20<x1<150:
-                    imageCanvas = np.zeros((720,1280,3),np.uint8) #clears the canvas
-                elif 250<x1<450:
-                    headerImage=overlayList[0]
-                    drawColor=(0,0,255)
-                elif 550<x1<750:
-                    headerImage=overlayList[1]
-                    drawColor=(255, 150, 0)
-                elif 800<x1<900:
-                    headerImage=overlayList[2]
-                    drawColor=(255,105,180)
-                elif 950<x1<1200:
-                    headerImage=overlayList[3]
+                if 244<x1<330:
+                    brush.decrease()
+                elif 330<x1<420:
+                    brush.increase()
+                elif 460<x1<552:
+                    drawColor=(45,45,240)
+                elif 552<x1<650:
+                    drawColor=(230,78,214)
+                elif 650<x1<741:
+                    drawColor=(15, 245, 245)
+                elif 741<x1<832:
+                    drawColor=(13,152,35)
+                elif 832<x1<925:
+                    drawColor=(250,160,15)
+                elif 962<x1<1051:
                     drawColor=(0,0,0)
-                #TODO change x's
-                #This will increaase and decrease the brush size
-                elif x1 > 1200: brush.increase()
-                elif x1 > 12000: brush.decrease()
+                elif 1087<x1<1175:
+                    imageCanvas = np.zeros((720,1280,3),np.uint8) #clears the canvas
 
             #Updating the selected color
             cv2.circle(img, (cx,cy), 1, drawColor, brush.size)
@@ -168,14 +159,13 @@ while running:
     #Adding the original color to the inscribed region using bitwise_or operations
     img = cv2.bitwise_or(img,imageCanvas)
 
+    ##########################################################################################
+
     #Adding hand landmarks
     img = detector.findHands(img, captImg)
 
     ##########################################################################################
 
-    #Setting the header image in the main window
-    #Inserting header image on the main window (Header size:1280x125)
-    img[0:125,0:1280]=headerImage
 
     cv2.imshow("Painter",img)
 
