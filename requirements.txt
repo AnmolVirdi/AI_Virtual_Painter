@@ -1,6 +1,9 @@
 opencv-python==4.7.0.72 
 numpy==1.24.2
 comtypes==1.1.10
-mediapipe==0.9.1.0 
 pycaw==20181226
-pygame==2.1.2
+pygame==2.2.0
+
+mediapipe; platform_system != "Darwin" or platform.machine != "arm64"
+mediapipe-silicon; platform_system == "Darwin" and platform.machine == "arm64"
+protobuf==3.20.1
