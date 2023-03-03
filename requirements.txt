@@ -1,6 +1,6 @@
-opencv_python3==1.0
-numpy==1.19.4
+opencv-python==4.7.0.72 
+numpy==1.24.2
 comtypes==1.1.10
-mediapipe==0.8.7.1
+mediapipe==0.9.1.0 
 pycaw==20181226
 pygame==2.1.2
