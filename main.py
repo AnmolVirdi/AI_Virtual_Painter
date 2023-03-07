@@ -2,10 +2,9 @@ import cv2
 import numpy as np
 import time
 import handtrackingmodule as htm #mediapipe library used in this module
-import pygame
 
-pygame.init()
 
+cv2.namedWindow("Painter", cv2.WINDOW_AUTOSIZE)
 #Importing header images using os functions
 folder_location = "Utilities/Header"
 
@@ -48,10 +47,9 @@ class Brush:
 brush = Brush(20)
 
 #Displaying the video, frame by frame
-running = True
-while running:
+while True:
     #keyboard events
-    for event in pygame.event.get():
+    """for event in pygame.event.get():
         #Save image
         if event.type == pygame.KEYDOWN and pygame.key.name(event.key) == 's':
             save_image(imageCanvas)
@@ -62,7 +60,7 @@ while running:
     #increase/decrease brush size
     key_input = pygame.key.get_pressed()   
     if key_input[pygame.K_UP]: brush.increase()
-    if key_input[pygame.K_DOWN]: brush.decrease()
+    if key_input[pygame.K_DOWN]: brush.decrease()"""
 
     #Importing main image using read() function
     success, img = vCap.read()
@@ -168,6 +166,11 @@ while running:
 
 
     cv2.imshow("Painter",img)
+    key = cv2.waitKey(1)
+    if key == ord('s'):
+        save_image(img)
+    elif key == ord('q'):
+        break
 
-pygame.quit()
+cv2.destroyAllWindows()
 exit()
