@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import time
 import handtrackingmodule as htm #mediapipe library used in this module
+from Button import Button
 
 cv2.namedWindow("Painter", cv2.WINDOW_AUTOSIZE)
 #Importing header images using os functions
@@ -44,6 +45,7 @@ class Brush:
             self.size -= 5
 
 brush = Brush(20)
+free_mode_btn = Button(444, 300, "MODO LIVRE")
 
 #Displaying the video, frame by frame
 while True:
@@ -139,26 +141,37 @@ while True:
 
     ##########################################################################################
 
-    #COMBINING BOTH THE IMAGES(Original video frame and the Canvas)
+    if(True):
+        #new Button
+        #free_mode_btn = Button(244, 100, "MODO LIVRE")
+        free_mode_btn.draw(img)
+        if len(landmarkList) != 0:
+            x1, y1 = landmarkList[8][1], landmarkList[8][2]
+            x0, y0 = landmarkList[4][1], landmarkList[4][2]
+            if (x1-x0)**2 + (y1-y0)**2 < (1500):
+                if(free_mode_btn.click([x1, y1])):
+                    print("free mode clicked")
+    else:
+        #COMBINING BOTH THE IMAGES(Original video frame and the Canvas)
 
-    #For thresholding, the first argument is the source image, which should be a grayscale image.
-    imageGray = cv2.cvtColor(imageCanvas, cv2.COLOR_BGR2GRAY) #converted to grayscale
-    #Converting it into binary image(Thresholding)
-    _, imgBinary = cv2.threshold(imageGray,50,255,cv2.THRESH_BINARY_INV)
-    imgBinary = cv2.cvtColor(imgBinary, cv2.COLOR_GRAY2BGR) #imgBinary: Inverted and B&W version of imageCanvas
+        #For thresholding, the first argument is the source image, which should be a grayscale image.
+        imageGray = cv2.cvtColor(imageCanvas, cv2.COLOR_BGR2GRAY) #converted to grayscale
+        #Converting it into binary image(Thresholding)
+        _, imgBinary = cv2.threshold(imageGray,50,255,cv2.THRESH_BINARY_INV)
+        imgBinary = cv2.cvtColor(imgBinary, cv2.COLOR_GRAY2BGR) #imgBinary: Inverted and B&W version of imageCanvas
 
-    #Inscribing the black region of imgBinary to main image(img) using bitwise_and operations
-    img = cv2.bitwise_and(img, imgBinary)
+        #Inscribing the black region of imgBinary to main image(img) using bitwise_and operations
+        img = cv2.bitwise_and(img, imgBinary)
 
-    #Adding the original color to the inscribed region using bitwise_or operations
-    img = cv2.bitwise_or(img,imageCanvas)
+        #Adding the original color to the inscribed region using bitwise_or operations
+        img = cv2.bitwise_or(img,imageCanvas)
 
-    ##########################################################################################
+        ##########################################################################################
 
-    #Adding hand landmarks
-    img = detector.findHands(img, captImg)
+        #Adding hand landmarks
+        img = detector.findHands(img, captImg)
 
-    ##########################################################################################
+        ##########################################################################################
 
 
     cv2.imshow("Painter",img)
