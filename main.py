@@ -69,12 +69,15 @@ while True:
         #Middle finger tip coordinates(landmark number 12)
         x2,y2 = landmarkList[12][1],landmarkList[12][2]
 
+        #Thumb finder tip coordinates(landmark number 4)
+        x0,y0 = landmarkList[4][1],landmarkList[4][2]
+
         #Checking which Fingers are up
         fingers = detector.fingersUp()
         #For each finger, it returns 0 if it's up and 1 if it's not.
         #print(fingers)
 
-        #If two fingers(index and mid) are up, selection mode(no drawing)
+        #Move mode: If two fingers(index and mid) are up, selection mode(no drawing)
         if fingers[1]==0 and fingers[2]==0:
             #Selection mode
             cx,cy = (x1+x2)//2,(y1+y2)//2
@@ -106,7 +109,7 @@ while True:
             #Updating the selected color
             cv2.circle(img, (cx,cy), 1, drawColor, brush.size)
 
-        #Drawing mode when only index finger is Up
+        #Drawing mode: Index finger up
         if fingers[1]==0 and fingers[2]==1:
             cv2.circle(img,(x1,y1), 1, drawColor, brush.size + 15)
             #Drawing mode
@@ -119,7 +122,15 @@ while True:
             cv2.line(img,(xx,yy),(x1,y1),drawColor, brush.size)
             cv2.line(imageCanvas,(xx,yy),(x1,y1),drawColor, brush.size)
 
-        #midle finder up
+        #Cleaning mode: All fingers up
+        if fingers.count(1)==5:
+            print("cleaning mode")
+
+        #Click mode: Thumb and Index fingers close to each other
+        if (x1-x0)**2 + (y1-y0)**2 < (1500):
+            print("clicking mode")
+
+        #Mal comportado mode: All fingers up except the middle finger
         if fingers[2]==0 and not(False in [fingers[x]==1 for x in [0, 1, 3, 4]]):
             print("mal comportado")
 
