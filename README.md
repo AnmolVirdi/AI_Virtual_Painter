@@ -1,8 +1,8 @@
 # Keyboard macros
 - [S]: Save Paint
 - [Q]: Quit Program
-- [⬆️]: Increase Brush Size
-- [⬇️]: Decrease Brush Size
+- [+]: Increase Brush Size
+- [-]: Decrease Brush Size
 
 # How to install
 ```python3 -m pip install --ignore-installed -r requirements.txt```
