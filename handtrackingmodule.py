@@ -70,9 +70,9 @@ class handDetector():
 
         #thumb
         if self.lmList[tipIDs[0]][1]< self.lmList[tipIDs[0]-1][1]:
-            fingers.append(1)
-        else:
             fingers.append(0)
+        else:
+            fingers.append(1)
 
         # Other fingers
         for id in range(1,5):

@@ -3,12 +3,17 @@ import numpy as np
 import time
 import handtrackingmodule as htm #mediapipe library used in this module
 from Button import Button
+from Brush import Brush
 
 cv2.namedWindow("Painter", cv2.WINDOW_AUTOSIZE)
 #Importing header images using os functions
 folder_location = "Utilities/Header"
 
-headerImage = cv2.imread(f'{folder_location}/header.png') #setting default header image
+
+video_width = 1280
+ratio = 16/9
+headerImage = cv2.imread(f'{folder_location}/header.png')
+ni_logo = cv2.imread('Utilities/logo.png')
 
 drawColor = (45,45,240) #Default color
 xx,yy=0,0 #used as reference coordinates during drawing mode
@@ -17,8 +22,8 @@ xx,yy=0,0 #used as reference coordinates during drawing mode
 #Variable to store video using cv2.VideoCapture() function
 vCap = cv2.VideoCapture(0)
 #Setting video resolution to 1280x720
-vCap.set(3,1280)
-vCap.set(4,720)
+vCap.set(3,video_width)
+vCap.set(4,video_width*ratio)
 
 #Creating an instance from the handtrackingmodule
 #Setting the detection confidence to 85% for accurate performance
@@ -34,18 +39,11 @@ def save_image(matrix):
     cv2.imwrite(filename, matrix)
     return 
 
-class Brush:
-    def __init__(self, size):
-        self.size = size
-    def increase(self):
-        if self.size < 180:
-            self.size += 5
-    def decrease(self):
-        if self.size > 10:
-            self.size -= 5
-
 brush = Brush(20)
-free_mode_btn = Button(444, 300, "MODO LIVRE")
+free_mode_btn = Button(250, 300, "MODO LIVRE") 
+challenge_mode_btn = Button(700, 300, "DESAFIO")
+ranking_btn = Button(500, 500, "RANKING") 
+controls_btn = Button(900, 100, "CONTROLOS")
 
 #Displaying the video, frame by frame
 while True:
@@ -60,9 +58,6 @@ while True:
 
     #Setting the header image in the main window
     #Inserting header image on the main window (Header size:1280x100)
-
-    overlay=cv2.addWeighted(img[0:100, 0:1280],0.2,headerImage,0.8, 1)
-    img[0:100, 0:1280] = overlay
 
     if (len(landmarkList) != 0):
         #index finger tip coordinates(landmark number 8)
@@ -112,7 +107,7 @@ while True:
             cv2.circle(img, (cx,cy), 1, drawColor, brush.size)
 
         #Drawing mode: Index finger up
-        if fingers[1]==0 and fingers[2]==1:
+        if fingers[1]==0 and fingers[2]==1 and fingers[3]==1 and fingers[4]==1:
             cv2.circle(img,(x1,y1), 1, drawColor, brush.size + 15)
             #Drawing mode
             #Basically, we'll be drawing random lines which are actually tiny cv2.lines on loop
@@ -125,7 +120,8 @@ while True:
             cv2.line(imageCanvas,(xx,yy),(x1,y1),drawColor, brush.size)
 
         #Cleaning mode: All fingers up
-        if fingers.count(1)==5:
+        print(fingers)
+        if fingers == [0, 0, 0, 0, 0] or fingers == [1, 0, 0, 0, 0]:
             print("cleaning mode")
 
         #Click mode: Thumb and Index fingers close to each other
@@ -133,7 +129,7 @@ while True:
             print("clicking mode")
 
         #Mal comportado mode: All fingers up except the middle finger
-        if fingers[2]==0 and not(False in [fingers[x]==1 for x in [0, 1, 3, 4]]):
+        if fingers[2]==0 and not(False in [fingers[x]==1 for x in [1, 3, 4]]):
             print("mal comportado")
 
         #updating the reference points
@@ -142,9 +138,12 @@ while True:
     ##########################################################################################
 
     if(True):
-        #new Button
-        #free_mode_btn = Button(244, 100, "MODO LIVRE")
+        # Buttons
         free_mode_btn.draw(img)
+        challenge_mode_btn.draw(img)
+        controls_btn.draw(img)
+        ranking_btn.draw(img)
+
         if len(landmarkList) != 0:
             x1, y1 = landmarkList[8][1], landmarkList[8][2]
             x0, y0 = landmarkList[4][1], landmarkList[4][2]
@@ -152,6 +151,9 @@ while True:
                 if(free_mode_btn.click([x1, y1])):
                     print("free mode clicked")
     else:
+        overlay=cv2.addWeighted(img[0:100, 0:1280],0.2,headerImage,0.8, 1)
+        img[0:100, 0:1280] = overlay
+
         #COMBINING BOTH THE IMAGES(Original video frame and the Canvas)
 
         #For thresholding, the first argument is the source image, which should be a grayscale image.
