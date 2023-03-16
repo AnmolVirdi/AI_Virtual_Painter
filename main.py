@@ -4,6 +4,7 @@ import time
 import handtrackingmodule as htm #mediapipe library used in this module
 from Button import Button
 from Brush import Brush
+import cvzone
 
 cv2.namedWindow("Painter", cv2.WINDOW_AUTOSIZE)
 #Importing header images using os functions
@@ -14,6 +15,7 @@ video_width = 1280
 ratio = 16/9
 headerImage = cv2.imread(f'{folder_location}/header.png')
 ni_logo = cv2.imread('Utilities/logo.png')
+ni_banner = cv2.imread('Utilities/banner.png', cv2.IMREAD_UNCHANGED)
 
 drawColor = (45,45,240) #Default color
 xx,yy=0,0 #used as reference coordinates during drawing mode
@@ -132,12 +134,25 @@ while True:
         if fingers[2]==0 and not(False in [fingers[x]==1 for x in [1, 3, 4]]):
             print("mal comportado")
 
+            #Testing
+            img[landmarkList[8][2]-250:landmarkList[8][2]+250, landmarkList[8][1]-250:landmarkList[8][1]+250] = cv2.GaussianBlur(img[landmarkList[8][2]-250:landmarkList[8][2]+250, landmarkList[8][1]-250:landmarkList[8][1]+250], (77, 77), 77)
+
+
         #updating the reference points
         xx,yy=x1,y1
 
     ##########################################################################################
 
     if(True):
+
+
+        #create a black overlay with opacity 0.2
+        black_overlay = np.zeros((720, 1280, 3), np.uint8)
+        img = cv2.addWeighted(img[0:720, 0:1280],0.5,black_overlay,0.5, 1)
+
+        # Logo
+        img = cvzone.overlayPNG(img, ni_banner, [20, 20])
+
         # Buttons
         free_mode_btn.draw(img)
         challenge_mode_btn.draw(img)
