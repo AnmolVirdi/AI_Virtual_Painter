@@ -12,6 +12,10 @@ class Button:
         self.y = y
         self.text = text
 
+        if(len(text) > 10):
+            self.w = 30 * len(text) + 60 
+        
+
     def draw(self, img):
         # draw button with openCV
         cv2.rectangle(img, (self.x, self.y), (self.x + self.w, self.y + self.h), BACKGROUND_COLOR, -1)
@@ -23,6 +27,6 @@ class Button:
         cv2.putText(img, self.text, (text_x, text_y), font, 3, TEXT_COLOR, 2)
 
     def click(self, pos):
-        # check if the mouse is inside the button
+        # Check if the mouse is inside the button
         return self.x < pos[0] < self.x + self.w and self.y < pos[1] < self.y + self.h
     

@@ -2,20 +2,30 @@ import cv2
 import numpy as np
 import time
 import handtrackingmodule as htm #mediapipe library used in this module
+import cvzone
+import pandas as pd
+
 from Button import Button
 from Brush import Brush
-import cvzone
+from Ranking import Ranking
+
+NI_COLOR_RED = (54, 54, 179) #BGR
 
 cv2.namedWindow("Painter", cv2.WINDOW_AUTOSIZE)
 #Importing header images using os functions
 folder_location = "Utilities/Header"
 
 
-video_width = 1280
 ratio = 16/9
+video_width = 1280
+video_height = int(video_width/ratio)
 headerImage = cv2.imread(f'{folder_location}/header.png')
 ni_logo = cv2.imread('Utilities/logo.png')
 ni_banner = cv2.imread('Utilities/banner.png', cv2.IMREAD_UNCHANGED)
+ranking_img = cv2.imread('Utilities/ranking.png', cv2.IMREAD_UNCHANGED)
+#ranking_img = cv2.resize(ranking_img, (100, 100))
+
+ranking = Ranking()
 
 drawColor = (45,45,240) #Default color
 xx,yy=0,0 #used as reference coordinates during drawing mode
@@ -46,6 +56,7 @@ free_mode_btn = Button(250, 300, "MODO LIVRE")
 challenge_mode_btn = Button(700, 300, "DESAFIO")
 ranking_btn = Button(500, 500, "RANKING") 
 controls_btn = Button(900, 100, "CONTROLOS")
+back_btn = Button(100, 250, "VOLTAR ATRAS")
 
 #Displaying the video, frame by frame
 while True:
@@ -122,7 +133,6 @@ while True:
             cv2.line(imageCanvas,(xx,yy),(x1,y1),drawColor, brush.size)
 
         #Cleaning mode: All fingers up
-        print(fingers)
         if fingers == [0, 0, 0, 0, 0] or fingers == [1, 0, 0, 0, 0]:
             print("cleaning mode")
 
@@ -142,8 +152,28 @@ while True:
         xx,yy=x1,y1
 
     ##########################################################################################
-
     if(True):
+        #create a black overlay with opacity 0.2
+        black_overlay = np.zeros((720, 1280, 3), np.uint8)
+        img = cv2.addWeighted(img[0:720, 0:1280],0.3,black_overlay,0.5, 1)
+
+        # Logo
+        img = cvzone.overlayPNG(img, ni_banner, (20, 20))
+        
+        # Ranking image
+        img = cvzone.overlayPNG(img, ranking_img, (170, video_height - ranking_img.shape[0]))
+
+        # Ranking
+        x, y, h = 650, 150, 48
+        cv2.putText(img, "Ranking", (x, y - h), cv2.FONT_HERSHEY_SIMPLEX, 1.5, NI_COLOR_RED, 4, cv2.LINE_AA)
+        for person in ranking.top:
+            cv2.putText(img, person['name'], (x, y + h * ranking.top.index(person)), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 2, cv2.LINE_AA)
+            cv2.putText(img, str(person['score']), (x + 400, y + h * ranking.top.index(person)), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 2, cv2.LINE_AA)
+        
+        # Button
+        back_btn.draw(img)
+
+    if(False):
 
 
         #create a black overlay with opacity 0.2
@@ -165,7 +195,7 @@ while True:
             if (x1-x0)**2 + (y1-y0)**2 < (1500):
                 if(free_mode_btn.click([x1, y1])):
                     print("free mode clicked")
-    else:
+    if(False):
         overlay=cv2.addWeighted(img[0:100, 0:1280],0.2,headerImage,0.8, 1)
         img[0:100, 0:1280] = overlay
 
