@@ -11,6 +11,8 @@ from Ranking import Ranking
 
 NI_COLOR_RED = (54, 54, 179) #BGR
 
+STATE = "main_menu"
+
 cv2.namedWindow("Painter", cv2.WINDOW_AUTOSIZE)
 #Importing header images using os functions
 folder_location = "Utilities/Header"
@@ -152,7 +154,9 @@ while True:
         xx,yy=x1,y1
 
     ##########################################################################################
-    if(True):
+    
+    
+    if(STATE == "ranking"):
         #create a black overlay with opacity 0.2
         black_overlay = np.zeros((720, 1280, 3), np.uint8)
         img = cv2.addWeighted(img[0:720, 0:1280],0.3,black_overlay,0.5, 1)
@@ -173,8 +177,14 @@ while True:
         # Button
         back_btn.draw(img)
 
-    if(False):
+        if len(landmarkList) != 0:
+            x1, y1 = landmarkList[8][1], landmarkList[8][2]
+            x0, y0 = landmarkList[4][1], landmarkList[4][2]
+            if (x1-x0)**2 + (y1-y0)**2 < (1500):
+                if back_btn.click([x1, y1]):
+                    STATE = "main_menu"
 
+    if(STATE == "main_menu"):
 
         #create a black overlay with opacity 0.2
         black_overlay = np.zeros((720, 1280, 3), np.uint8)
@@ -195,7 +205,11 @@ while True:
             if (x1-x0)**2 + (y1-y0)**2 < (1500):
                 if(free_mode_btn.click([x1, y1])):
                     print("free mode clicked")
-    if(False):
+                
+                if(ranking_btn.click([x1, y1])):
+                    STATE = "ranking"
+    
+    if(STATE == "painting"):
         overlay=cv2.addWeighted(img[0:100, 0:1280],0.2,headerImage,0.8, 1)
         img[0:100, 0:1280] = overlay
 
