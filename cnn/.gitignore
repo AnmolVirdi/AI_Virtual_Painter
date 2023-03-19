@@ -1,0 +1,16 @@
+dataset/
+!.gitkeep
+
+logs/
+!.gitkeep
+
+models/
+!.gitkeep
+
+*.py[cod]
+*$py.class
+
+# virtualenv
+venv/
+.venv/
+env/
