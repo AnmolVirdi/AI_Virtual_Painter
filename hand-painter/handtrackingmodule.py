@@ -33,7 +33,7 @@ class handDetector():
         self.results =  self.hands.process(img1)
 
         #print(results.multi_hand_landmarks)
-        if self.results.multi_hand_landmarks: # Usar lenght aqui
+        if self.results.multi_hand_landmarks:
             for handLms in self.results.multi_hand_landmarks:
                 if draw:
                     self.mpDraw.draw_landmarks(img, handLms, self.mpHands.HAND_CONNECTIONS, 
@@ -65,30 +65,33 @@ class handDetector():
                 l.append([id, cx,cy])
                 if draw:
                     cv2.circle(img, (cx,cy), 10, (255,255,0), cv2.FILLED)
-                self.lmList.append(l)
+
+            self.lmList.append(l)
 
         return self.lmList
 
     def fingersUp(self): #checks whether the finger are up or not
-        fingers=[]
         tipIDs=[4,8,12,16,20] #Finger tip IDs
+        hands = []
+        for hand in self.lmList:
+            fingers=[]
 
-        #thumb
-        if self.lmList[tipIDs[0]][1]< self.lmList[tipIDs[0]-1][1]:
-            fingers.append(0)
-        else:
-            fingers.append(1)
-
-        print(len(self.lmList))
-
-        # Other fingers
-        for id in range(1,5):
-            if self.lmList[tipIDs[id]][2]> self.lmList[tipIDs[id]-2][2]:
-                fingers.append(1)
-            else:
+            #thumb
+            if hand[tipIDs[0]][1]< hand[tipIDs[0]-1][1]:
                 fingers.append(0)
-        return fingers
-        #it returns a list (0 if it's up and 1 if it's not).
+            else:
+                fingers.append(1)
+
+            print(len(hand))
+
+            # Other fingers
+            for id in range(1,5):
+                if hand[tipIDs[id]][2]> hand[tipIDs[id]-2][2]:
+                    fingers.append(1)
+                else:
+                    fingers.append(0)
+            hands.append(fingers)
+        return hands
 
 #Note: To change the color of Landmark joining lines
 #Use this below mentioned instead of line number 31
