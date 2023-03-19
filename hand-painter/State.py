@@ -8,6 +8,7 @@ import cvzone
 from ImageCanvas import ImageCanvas
 from Button import Button
 import sys
+from Hand import Hand
 
 class State:
     def __init__(self, headerImage, ni_logo, ni_banner, ranking_img, ranking: Ranking, video_height, imageCanvas: ImageCanvas) -> None:
@@ -62,20 +63,16 @@ class State:
         )
 
     @abstractmethod
-    def run(self, 
-            detector, 
-            captImg, 
-            landmarkList) -> "State":
+    def run(self,
+            img,
+            hand: Hand) -> tuple["State", Mat]:
         pass
 
 
 class PaintingState(State):
     def run(self,
             img,
-            detector, 
-            captImg, 
-            landmarkList) -> tuple[State, Mat]:
-
+            hands: list[Hand]) -> tuple[State, Mat]:
         overlay=cv2.addWeighted(img[0:100, 0:1280],0.2, self.headerImage,0.8, 1)
         img[0:100, 0:1280] = overlay
 
@@ -97,25 +94,17 @@ class PaintingState(State):
 
 
         # TODO CHANGE THIS TO ABOVE UI?
-        if len(landmarkList) != 0:
-            for hand in landmarkList:
-                x1, y1 = hand[8][1], hand[8][2]
-                x0, y0 = hand[4][1], hand[4][2]
-                if (x1-x0)**2 + (y1-y0)**2 < (1500):
-                    if self.menu_btn.click([x1, y1]):
-                        return self.mainMenuState(), img
-
-        #Adding hand landmarks
-        img = detector.findHands(img, captImg)
+        for hand in hands:
+            if hand.clicked():
+                if self.menu_btn.click(hand.index_tip_position):
+                    return self.mainMenuState(), img
 
         return self, img
 
 class MainMenuState(State):
     def run(self,
             img,
-            detector, 
-            captImg, 
-            landmarkList) -> tuple[State, Mat]:
+            hands: list[Hand]) -> tuple[State, Mat]:
       #create a black overlay with opacity 0.2
         black_overlay = np.zeros((720, 1280, 3), np.uint8)
         img = cv2.addWeighted(img[0:720, 0:1280],0.5,black_overlay,0.5, 1)
@@ -130,28 +119,26 @@ class MainMenuState(State):
         self.ranking_btn.draw(img)
         self.exit_btn.draw(img)
 
-        if len(landmarkList) != 0:
-            for hand in landmarkList:
-                x1, y1 = hand[8][1], hand[8][2]
-                x0, y0 = hand[4][1], hand[4][2]
-                if (x1-x0)**2 + (y1-y0)**2 < (1500):
-                    if(self.free_mode_btn.click([x1, y1])):
-                        return self.paintingState(), img
-                    
-                    if(self.ranking_btn.click([x1, y1])):
-                        return self.rankingState(), img
-                    
-                    if(self.exit_btn.click([x1, y1])):
-                        sys.exit(0)
+
+        for hand in hands:
+            if not hand.clicked():
+                continue
+
+            if(self.free_mode_btn.click(hand.index_tip_position)):
+                return self.paintingState(), img
+            
+            if(self.ranking_btn.click(hand.index_tip_position)):
+                return self.rankingState(), img
+            
+            if(self.exit_btn.click(hand.index_tip_position)):
+                sys.exit(0)
 
         return self, img
 
 class RankingState(State):
     def run(self,
             img,
-            detector, 
-            captImg, 
-            landmarkList) -> tuple[State, Mat]:
+            hands: list[Hand]) -> tuple[State, Mat]:
         black_overlay = np.zeros((720, 1280, 3), np.uint8)
         img = cv2.addWeighted(img[0:720, 0:1280],0.3,black_overlay,0.5, 1)
 
@@ -171,12 +158,10 @@ class RankingState(State):
         # Button
         self.back_btn.draw(img)
 
-        if len(landmarkList) != 0:
-            for hand in landmarkList:
-                x1, y1 = hand[8][1], hand[8][2]
-                x0, y0 = hand[4][1], hand[4][2]
-                if (x1-x0)**2 + (y1-y0)**2 < (1500):
-                    if self.back_btn.click([x1, y1]):
-                        return self.mainMenuState(), img
-        
+        for hand in hands:
+            if not hand.clicked():
+                continue
+            if self.back_btn.click(hand.index_tip_position):
+                return self.mainMenuState(), img
+
         return self, img

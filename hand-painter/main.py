@@ -103,7 +103,7 @@ while True:
     img = captImg #flipping the video, to compensate lateral inversion
 
     #Finding Hand Landmarks using handtrackingmodule
-    img = detector.findHands(img, img, draw=False) 
+    img = detector.findHands(img, img) 
     landmarkList = detector.findPositions(img, draw=False)
     hand_fingers = detector.fingersUp()
 
@@ -194,7 +194,7 @@ while True:
 
     ##########################################################################################
 
-    state, img = state.run(img, detector, captImg, landmarkList)
+    state, img = state.run(img, hands_list)
 
     cv2.imshow("Painter",img)
     key = cv2.waitKey(1)
@@ -206,10 +206,10 @@ while True:
         save_image(img)
     elif key == ord('q'):
         break
-    elif key == ord('+'): #remove this? or change in all hands?
-        brush.increase()
-    elif key == ord('-'):
-        brush.decrease()
+    # elif key == ord('+'): #remove this? or change in all hands?
+    #     brush.increase()
+    # elif key == ord('-'):
+    #     brush.decrease()
 
 cv2.destroyAllWindows()
 exit()
