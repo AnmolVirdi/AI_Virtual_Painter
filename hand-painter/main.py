@@ -108,31 +108,6 @@ while True:
 
     hands_list = merge_hands(hands_list, landmarkList, hand_fingers)
 
-    #Setting the header image in the main window
-    #Inserting header image on the main window (Header size:1280x100)
-
-    
-
-            # #Cleaning mode: All fingers up
-            # if hand.count_fingers_up() >= 3:
-            #     print("cleaning mode")
-
-            # #Click mode: Thumb and Index fingers close to each other
-            # if hand.clicked():
-            #     print("clicking mode")
-
-            # #Mal comportado mode: All fingers up except the middle finger
-            # if hand.middle_finger():
-            #     print("mal comportado")
-
-            #     #TODO: fix bug
-            #     #img[hand[8][2]-250:hand[8][2]+250, hand[8][1]-250:hand[8][1]+250] = cv2.GaussianBlur(img[hand[8][2]-250:hand[8][2]+250, hand[8][1]-250:hand[8][1]+250], (77, 77), 77)
-
-
-            #updating the reference points
-
-    ##########################################################################################
-
     state, img = state.run(img, hands_list)
 
     cv2.imshow("Painter",img)
