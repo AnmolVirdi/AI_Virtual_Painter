@@ -6,12 +6,14 @@ import cvzone
 import pandas as pd
 
 from Button import Button
+from ImageCanvas import ImageCanvas
 from Brush import Brush
 from Ranking import Ranking
+from State import State, MainMenuState
 
 NI_COLOR_RED = (54, 54, 179) #BGR
 
-STATE = "painting"
+STATE = "main_menu"
 
 cv2.namedWindow("Painter", cv2.WINDOW_AUTOSIZE)
 #Importing header images using os functions
@@ -45,7 +47,17 @@ detector = htm.handDetector(detectionCon=0.85)
 
 #Canvas: It'll be like an invisible screen on our video, on which drawing functions will be implemented.
 #Numpy array with zeros(representing black screen) similar to the dimensions of original video frames
-imageCanvas = np.zeros((720,1280,3),np.uint8)
+imageCanvas = ImageCanvas(1280, 720)
+
+state: State = MainMenuState(
+    headerImage,
+    ni_logo,
+    ni_banner,
+    ranking_img,
+    ranking,
+    video_height,
+    imageCanvas
+)
 
 def save_image(matrix):
     timestamp = time.time()
@@ -116,7 +128,7 @@ while True:
                 elif 962<x1<1051:
                     drawColor=(0,0,0)
                 elif 1087<x1<1175:
-                    imageCanvas = np.zeros((720,1280,3),np.uint8) #clears the canvas
+                    imageCanvas.reset() #clears the canvas
 
             #Updating the selected color
             cv2.circle(img, (cx,cy), 1, drawColor, brush.size)
@@ -132,7 +144,7 @@ while True:
                 xx,yy=x1,y1;
 
             cv2.line(img,(xx,yy),(x1,y1),drawColor, brush.size)
-            cv2.line(imageCanvas,(xx,yy),(x1,y1),drawColor, brush.size)
+            cv2.line(imageCanvas.canvas,(xx,yy),(x1,y1),drawColor, brush.size)
 
         #Cleaning mode: All fingers up
         if fingers == [0, 0, 0, 0, 0] or fingers == [1, 0, 0, 0, 0]:
@@ -154,86 +166,8 @@ while True:
         xx,yy=x1,y1
 
     ##########################################################################################
-    
-    
-    if(STATE == "ranking"):
-        #create a black overlay with opacity 0.2
-        black_overlay = np.zeros((720, 1280, 3), np.uint8)
-        img = cv2.addWeighted(img[0:720, 0:1280],0.3,black_overlay,0.5, 1)
 
-        # Logo
-        img = cvzone.overlayPNG(img, ni_banner, (20, 20))
-        
-        # Ranking image
-        img = cvzone.overlayPNG(img, ranking_img, (170, video_height - ranking_img.shape[0]))
-
-        # Ranking
-        x, y, h = 650, 150, 48
-        cv2.putText(img, "Ranking", (x, y - h), cv2.FONT_HERSHEY_SIMPLEX, 1.5, NI_COLOR_RED, 4, cv2.LINE_AA)
-        for person in ranking.top:
-            cv2.putText(img, person['name'], (x, y + h * ranking.top.index(person)), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 2, cv2.LINE_AA)
-            cv2.putText(img, str(person['score']), (x + 400, y + h * ranking.top.index(person)), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 2, cv2.LINE_AA)
-        
-        # Button
-        back_btn.draw(img)
-
-        if len(landmarkList) != 0:
-            x1, y1 = landmarkList[8][1], landmarkList[8][2]
-            x0, y0 = landmarkList[4][1], landmarkList[4][2]
-            if (x1-x0)**2 + (y1-y0)**2 < (1500):
-                if back_btn.click([x1, y1]):
-                    STATE = "main_menu"
-
-    if(STATE == "main_menu"):
-
-        #create a black overlay with opacity 0.2
-        black_overlay = np.zeros((720, 1280, 3), np.uint8)
-        img = cv2.addWeighted(img[0:720, 0:1280],0.5,black_overlay,0.5, 1)
-
-        # Logo
-        img = cvzone.overlayPNG(img, ni_banner, [20, 20])
-
-        # Buttons
-        free_mode_btn.draw(img)
-        challenge_mode_btn.draw(img)
-        controls_btn.draw(img)
-        ranking_btn.draw(img)
-
-        if len(landmarkList) != 0:
-            x1, y1 = landmarkList[8][1], landmarkList[8][2]
-            x0, y0 = landmarkList[4][1], landmarkList[4][2]
-            if (x1-x0)**2 + (y1-y0)**2 < (1500):
-                if(free_mode_btn.click([x1, y1])):
-                    print("free mode clicked")
-                
-                if(ranking_btn.click([x1, y1])):
-                    STATE = "ranking"
-    
-    if(STATE == "painting"):
-        overlay=cv2.addWeighted(img[0:100, 0:1280],0.2,headerImage,0.8, 1)
-        img[0:100, 0:1280] = overlay
-
-        #COMBINING BOTH THE IMAGES(Original video frame and the Canvas)
-
-        #For thresholding, the first argument is the source image, which should be a grayscale image.
-        imageGray = cv2.cvtColor(imageCanvas, cv2.COLOR_BGR2GRAY) #converted to grayscale
-        #Converting it into binary image(Thresholding)
-        _, imgBinary = cv2.threshold(imageGray,50,255,cv2.THRESH_BINARY_INV)
-        imgBinary = cv2.cvtColor(imgBinary, cv2.COLOR_GRAY2BGR) #imgBinary: Inverted and B&W version of imageCanvas
-
-        #Inscribing the black region of imgBinary to main image(img) using bitwise_and operations
-        img = cv2.bitwise_and(img, imgBinary)
-
-        #Adding the original color to the inscribed region using bitwise_or operations
-        img = cv2.bitwise_or(img,imageCanvas)
-
-        ##########################################################################################
-
-        #Adding hand landmarks
-        img = detector.findHands(img, captImg)
-
-        ##########################################################################################
-
+    state, img = state.run(img, detector, captImg, landmarkList)
 
     cv2.imshow("Painter",img)
     key = cv2.waitKey(1)
