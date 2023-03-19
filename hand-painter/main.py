@@ -1,9 +1,6 @@
 import cv2
-import numpy as np
 import time
 import handtrackingmodule as htm #mediapipe library used in this module
-import cvzone
-import pandas as pd
 
 from Button import Button
 from ImageCanvas import ImageCanvas
@@ -18,7 +15,6 @@ STATE = "main_menu"
 cv2.namedWindow("Painter", cv2.WINDOW_AUTOSIZE)
 #Importing header images using os functions
 folder_location = "Utilities/Header"
-
 
 ratio = 16/9
 video_width = 1280
@@ -136,8 +132,6 @@ while True:
         #Drawing mode: Index finger up
         if fingers[1]==0 and fingers[2]==1 and fingers[3]==1 and fingers[4]==1:
             cv2.circle(img,(x1,y1), 1, drawColor, brush.size + 15)
-            #Drawing mode
-            #Basically, we'll be drawing random lines which are actually tiny cv2.lines on loop
 
             #Initialising reference points
             if xx==0 and yy==0:
@@ -173,7 +167,9 @@ while True:
     key = cv2.waitKey(1)
 
     # Keyboard Shortcuts
-    if key == ord('s'):
+    if key == ord('p'):
+        predict_image(imageCanvas)
+    elif key == ord('s'):
         save_image(img)
     elif key == ord('q'):
         break
