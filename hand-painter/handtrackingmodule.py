@@ -82,8 +82,6 @@ class handDetector():
             else:
                 fingers.append(1)
 
-            print(len(hand))
-
             # Other fingers
             for id in range(1,5):
                 if hand[tipIDs[id]][2]> hand[tipIDs[id]-2][2]:

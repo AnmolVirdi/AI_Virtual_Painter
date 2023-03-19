@@ -70,9 +70,70 @@ class State:
 
 
 class PaintingState(State):
+    def paint(self, img, hands):
+        # Add limits parameter for square limits in challenge mode
+        for hand in hands:
+            #index finger tip coordinates(landmark number 8)
+            x1,y1 = hand.index_tip_position
+
+            #Middle finger tip coordinates(landmark number 12)
+            x2,y2 = hand.middle_tip_position
+
+            #Checking which Fingers are up
+            #For each finger, it returns 0 if it's up and 1 if it's not.
+            #print(fingers)
+
+            if hand.indicator_and_midle_up():
+                #Selection mode
+                cx,cy = (x1+x2)//2,(y1+y2)//2
+
+                #color selections(In the header)
+                #Whichever brush_color(region) is selected, it'll get updated in the main window
+                if y1<100:
+                    #Now we'll divide the whole header(1280 width) into the regions of those brushes and eraser, and change our color accordingly.
+                    #Whichever region is selected, the corresponding color as well as headerImage is opted.
+                    if 244<x1<330:
+                        hand.brush.decrease()
+                    elif 330<x1<420:
+                        hand.brush.increase()
+                    elif 460<x1<552:
+                        hand.brush.setColor(45,45,240)
+                    elif 552<x1<650:
+                        hand.brush.setColor(230,78,214)
+                    elif 650<x1<741:
+                        hand.brush.setColor(15, 245, 245)
+                    elif 741<x1<832:
+                        hand.brush.setColor(13,152,35)
+                    elif 832<x1<925:
+                        hand.brush.setColor(250,160,15)
+                    elif 962<x1<1051:
+                        hand.brush.setColor(0,0,0)
+                    elif 1087<x1<1175:
+                        self.imageCanvas.reset() #clears the canvas
+
+                #Updating the selected color
+                cv2.circle(img, (cx,cy), 1, hand.brush.color, hand.brush.size)
+
+            #Drawing mode: Index finger up
+            if hand.indicator_up():
+                cv2.circle(img,(x1,y1), 1, hand.brush.color, hand.brush.size + 15)
+                #Drawing mode
+                #Basically, we'll be drawing random lines which are actually tiny cv2.lines on loop
+
+                #Initialising reference points
+                if not hand.last_drawn:
+                    hand.update_reference_points()
+                
+                xx, yy = hand.last_drawn
+
+                cv2.line(self.imageCanvas.canvas,(xx,yy),(x1,y1),hand.brush.color, hand.brush.size)
+            hand.update_reference_points()
+
     def run(self,
             img,
             hands: list[Hand]) -> tuple[State, Mat]:
+        self.paint(img, hands)
+
         overlay=cv2.addWeighted(img[0:100, 0:1280],0.2, self.headerImage,0.8, 1)
         img[0:100, 0:1280] = overlay
 
@@ -121,6 +182,8 @@ class MainMenuState(State):
 
 
         for hand in hands:
+            cv2.circle(img,(hand.index_tip_position[0], hand.index_tip_position[1]), 1, self.NI_COLOR_RED, hand.brush.size + 15)
+
             if not hand.clicked():
                 continue
 
@@ -159,6 +222,8 @@ class RankingState(State):
         self.back_btn.draw(img)
 
         for hand in hands:
+            cv2.circle(img,(hand.index_tip_position[0], hand.index_tip_position[1]), 1, self.NI_COLOR_RED, hand.brush.size + 15)
+
             if not hand.clicked():
                 continue
             if self.back_btn.click(hand.index_tip_position):
