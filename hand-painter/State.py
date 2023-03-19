@@ -129,11 +129,7 @@ class PaintingState(State):
                 cv2.line(self.imageCanvas.canvas,(xx,yy),(x1,y1),hand.brush.color, hand.brush.size)
             hand.update_reference_points()
 
-    def run(self,
-            img,
-            hands: list[Hand]) -> tuple[State, Mat]:
-        self.paint(img, hands)
-
+    def draw_menu(self, hands, img):
         overlay=cv2.addWeighted(img[0:100, 0:1280],0.2, self.headerImage,0.8, 1)
         img[0:100, 0:1280] = overlay
 
@@ -159,6 +155,14 @@ class PaintingState(State):
             if hand.clicked():
                 if self.menu_btn.click(hand.index_tip_position):
                     return self.mainMenuState(), img
+
+        return img
+
+    def run(self,
+            img,
+            hands: list[Hand]) -> tuple[State, Mat]:
+        self.paint(img, hands)
+        img = self.draw_menu(hands, img)
 
         return self, img
 
