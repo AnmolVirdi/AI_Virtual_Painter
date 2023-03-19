@@ -5,17 +5,19 @@ from Ranking import Ranking
 import numpy as np
 from cv2 import Mat
 import cvzone
-from numpy import ndarray, uint8
+from ImageCanvas import ImageCanvas
 from Button import Button
+import sys
 
 class State:
-    def __init__(self, headerImage, ni_logo, ni_banner, ranking_img, ranking: Ranking, video_height) -> None:
+    def __init__(self, headerImage, ni_logo, ni_banner, ranking_img, ranking: Ranking, video_height, imageCanvas: ImageCanvas) -> None:
         self.free_mode_btn = Button(250, 300, "MODO LIVRE") 
         self.challenge_mode_btn = Button(700, 300, "DESAFIO")
         self.ranking_btn = Button(500, 500, "RANKING") 
         self.controls_btn = Button(900, 100, "CONTROLOS")
         self.back_btn = Button(100, 250, "VOLTAR ATRAS")
-        self.exit_btn = Button(15, video_height - 100, "SAIR")
+        self.menu_btn = Button(15, video_height - 100, "SAIR")
+        self.exit_btn = Button(900, video_height - 120, "SAIR")
         self.headerImage = headerImage
         self.ni_logo = ni_logo
         self.ni_banner = ni_banner
@@ -23,6 +25,7 @@ class State:
         self.NI_COLOR_RED = (54, 54, 179)
         self.ranking = ranking
         self.video_height = video_height
+        self.imageCanvas = imageCanvas
 
     def mainMenuState(self):
         return MainMenuState(
@@ -31,17 +34,20 @@ class State:
             self.ni_banner,
             self.ranking_img,
             self.ranking,
-            self.video_height
+            self.video_height,
+            self.imageCanvas
         )
 
     def paintingState(self):
+        self.imageCanvas.reset()
         return PaintingState(
             self.headerImage,
             self.ni_logo,
             self.ni_banner,
             self.ranking_img,
             self.ranking,
-            self.video_height
+            self.video_height,
+            self.imageCanvas
         )
 
     def rankingState(self):
@@ -51,14 +57,14 @@ class State:
             self.ni_banner,
             self.ranking_img,
             self.ranking,
-            self.video_height
+            self.video_height,
+            self.imageCanvas
         )
 
     @abstractmethod
     def run(self, 
             detector, 
             captImg, 
-            imageCanvas: ndarray,
             landmarkList) -> "State":
         pass
 
@@ -68,7 +74,6 @@ class PaintingState(State):
             img,
             detector, 
             captImg, 
-            imageCanvas: ndarray,
             landmarkList) -> tuple[State, Mat]:
 
         overlay=cv2.addWeighted(img[0:100, 0:1280],0.2, self.headerImage,0.8, 1)
@@ -77,18 +82,18 @@ class PaintingState(State):
         #COMBINING BOTH THE IMAGES(Original video frame and the Canvas)
 
         #For thresholding, the first argument is the source image, which should be a grayscale image.
-        imageGray = cv2.cvtColor(imageCanvas, cv2.COLOR_BGR2GRAY) #converted to grayscale
+        imageGray = cv2.cvtColor(self.imageCanvas.canvas, cv2.COLOR_BGR2GRAY) #converted to grayscale
         #Converting it into binary image(Thresholding)
         _, imgBinary = cv2.threshold(imageGray,50,255,cv2.THRESH_BINARY_INV)
-        imgBinary = cv2.cvtColor(imgBinary, cv2.COLOR_GRAY2BGR) #imgBinary: Inverted and B&W version of imageCanvas
+        imgBinary = cv2.cvtColor(imgBinary, cv2.COLOR_GRAY2BGR) #imgBinary: Inverted and B&W version of self.imageCanvas
 
         #Inscribing the black region of imgBinary to main image(img) using bitwise_and operations
         img = cv2.bitwise_and(img, imgBinary)
 
         #Adding the original color to the inscribed region using bitwise_or operations
-        img = cv2.bitwise_or(img,imageCanvas)
+        img = cv2.bitwise_or(img,self.imageCanvas.canvas)
 
-        self.exit_btn.draw(img)
+        self.menu_btn.draw(img)
 
 
         # TODO CHANGE THIS TO ABOVE UI?
@@ -96,7 +101,7 @@ class PaintingState(State):
             x1, y1 = landmarkList[8][1], landmarkList[8][2]
             x0, y0 = landmarkList[4][1], landmarkList[4][2]
             if (x1-x0)**2 + (y1-y0)**2 < (1500):
-                if self.exit_btn.click([x1, y1]):
+                if self.menu_btn.click([x1, y1]):
                     return self.mainMenuState(), img
 
         #Adding hand landmarks
@@ -109,7 +114,6 @@ class MainMenuState(State):
             img,
             detector, 
             captImg, 
-            imageCanvas: ndarray,
             landmarkList) -> tuple[State, Mat]:
       #create a black overlay with opacity 0.2
         black_overlay = np.zeros((720, 1280, 3), np.uint8)
@@ -123,6 +127,7 @@ class MainMenuState(State):
         self.challenge_mode_btn.draw(img)
         self.controls_btn.draw(img)
         self.ranking_btn.draw(img)
+        self.exit_btn.draw(img)
 
         if len(landmarkList) != 0:
             x1, y1 = landmarkList[8][1], landmarkList[8][2]
@@ -133,6 +138,9 @@ class MainMenuState(State):
                 
                 if(self.ranking_btn.click([x1, y1])):
                     return self.rankingState(), img
+                
+                if(self.exit_btn.click([x1, y1])):
+                    sys.exit(0)
 
         return self, img
 
@@ -141,7 +149,6 @@ class RankingState(State):
             img,
             detector, 
             captImg, 
-            imageCanvas: ndarray,
             landmarkList) -> tuple[State, Mat]:
         black_overlay = np.zeros((720, 1280, 3), np.uint8)
         img = cv2.addWeighted(img[0:720, 0:1280],0.3,black_overlay,0.5, 1)

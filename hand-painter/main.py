@@ -6,6 +6,7 @@ import cvzone
 import pandas as pd
 
 from Button import Button
+from ImageCanvas import ImageCanvas
 from Brush import Brush
 from Ranking import Ranking
 from State import State, MainMenuState
@@ -30,16 +31,6 @@ ranking_img = cv2.imread('Utilities/ranking.png', cv2.IMREAD_UNCHANGED)
 
 ranking = Ranking()
 
-state: State = MainMenuState(
-    headerImage,
-    ni_logo,
-    ni_banner,
-    ranking_img,
-    ranking,
-    video_height
-)
-
-
 drawColor = (45,45,240) #Default color
 xx,yy=0,0 #used as reference coordinates during drawing mode
 
@@ -56,7 +47,17 @@ detector = htm.handDetector(detectionCon=0.85)
 
 #Canvas: It'll be like an invisible screen on our video, on which drawing functions will be implemented.
 #Numpy array with zeros(representing black screen) similar to the dimensions of original video frames
-imageCanvas = np.zeros((720,1280,3),np.uint8)
+imageCanvas = ImageCanvas(1280, 720)
+
+state: State = MainMenuState(
+    headerImage,
+    ni_logo,
+    ni_banner,
+    ranking_img,
+    ranking,
+    video_height,
+    imageCanvas
+)
 
 def save_image(matrix):
     timestamp = time.time()
@@ -127,7 +128,7 @@ while True:
                 elif 962<x1<1051:
                     drawColor=(0,0,0)
                 elif 1087<x1<1175:
-                    imageCanvas = np.zeros((720,1280,3),np.uint8) #clears the canvas
+                    imageCanvas.reset() #clears the canvas
 
             #Updating the selected color
             cv2.circle(img, (cx,cy), 1, drawColor, brush.size)
@@ -143,7 +144,7 @@ while True:
                 xx,yy=x1,y1;
 
             cv2.line(img,(xx,yy),(x1,y1),drawColor, brush.size)
-            cv2.line(imageCanvas,(xx,yy),(x1,y1),drawColor, brush.size)
+            cv2.line(imageCanvas.canvas,(xx,yy),(x1,y1),drawColor, brush.size)
 
         #Cleaning mode: All fingers up
         if fingers == [0, 0, 0, 0, 0] or fingers == [1, 0, 0, 0, 0]:
@@ -166,7 +167,7 @@ while True:
 
     ##########################################################################################
 
-    state, img = state.run(img, detector, captImg, imageCanvas, landmarkList)
+    state, img = state.run(img, detector, captImg, landmarkList)
 
     cv2.imshow("Painter",img)
     key = cv2.waitKey(1)
