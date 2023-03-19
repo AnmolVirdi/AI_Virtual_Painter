@@ -31,8 +31,9 @@ class handDetector():
     def findHands(self, img, videoCap, draw=True):
         img1 = cv2.cvtColor(videoCap, cv2.COLOR_BGR2RGB)
         self.results =  self.hands.process(img1)
+
         #print(results.multi_hand_landmarks)
-        if self.results.multi_hand_landmarks:
+        if self.results.multi_hand_landmarks: # Usar lenght aqui
             for handLms in self.results.multi_hand_landmarks:
                 if draw:
                     self.mpDraw.draw_landmarks(img, handLms, self.mpHands.HAND_CONNECTIONS, 
@@ -41,11 +42,14 @@ class handDetector():
         return img
 
     #Function to find coordinates of all the landmarks of a particular hand(default= hand number 0). Returns a list of all of them.
-    def findPosition(self, img, handNo=0, draw=True):
+    def findPositions(self, img, draw=True):
 
         self.lmList = []
-        if self.results.multi_hand_landmarks:
-            myHand = self.results.multi_hand_landmarks[handNo]
+        if not self.results.multi_hand_landmarks:
+            return self.lmList
+
+        for myHand in self.results.multi_hand_landmarks:
+            l = []
             for id, lm in enumerate(myHand.landmark):
 
                 #To draw those handlandmarks on the video frames
@@ -58,9 +62,10 @@ class handDetector():
                 cx,cy = int(lm.x*width), int(lm.y*height)
 
                 #print(id, cx, cy)
-                self.lmList.append([id, cx,cy])
+                l.append([id, cx,cy])
                 if draw:
                     cv2.circle(img, (cx,cy), 10, (255,255,0), cv2.FILLED)
+                self.lmList.append(l)
 
         return self.lmList
 
@@ -73,6 +78,8 @@ class handDetector():
             fingers.append(0)
         else:
             fingers.append(1)
+
+        print(len(self.lmList))
 
         # Other fingers
         for id in range(1,5):

@@ -98,11 +98,12 @@ class PaintingState(State):
 
         # TODO CHANGE THIS TO ABOVE UI?
         if len(landmarkList) != 0:
-            x1, y1 = landmarkList[8][1], landmarkList[8][2]
-            x0, y0 = landmarkList[4][1], landmarkList[4][2]
-            if (x1-x0)**2 + (y1-y0)**2 < (1500):
-                if self.menu_btn.click([x1, y1]):
-                    return self.mainMenuState(), img
+            for hand in landmarkList:
+                x1, y1 = hand[8][1], hand[8][2]
+                x0, y0 = hand[4][1], hand[4][2]
+                if (x1-x0)**2 + (y1-y0)**2 < (1500):
+                    if self.menu_btn.click([x1, y1]):
+                        return self.mainMenuState(), img
 
         #Adding hand landmarks
         img = detector.findHands(img, captImg)
@@ -130,17 +131,18 @@ class MainMenuState(State):
         self.exit_btn.draw(img)
 
         if len(landmarkList) != 0:
-            x1, y1 = landmarkList[8][1], landmarkList[8][2]
-            x0, y0 = landmarkList[4][1], landmarkList[4][2]
-            if (x1-x0)**2 + (y1-y0)**2 < (1500):
-                if(self.free_mode_btn.click([x1, y1])):
-                    return self.paintingState(), img
-                
-                if(self.ranking_btn.click([x1, y1])):
-                    return self.rankingState(), img
-                
-                if(self.exit_btn.click([x1, y1])):
-                    sys.exit(0)
+            for hand in landmarkList:
+                x1, y1 = hand[8][1], hand[8][2]
+                x0, y0 = hand[4][1], hand[4][2]
+                if (x1-x0)**2 + (y1-y0)**2 < (1500):
+                    if(self.free_mode_btn.click([x1, y1])):
+                        return self.paintingState(), img
+                    
+                    if(self.ranking_btn.click([x1, y1])):
+                        return self.rankingState(), img
+                    
+                    if(self.exit_btn.click([x1, y1])):
+                        sys.exit(0)
 
         return self, img
 
@@ -170,10 +172,11 @@ class RankingState(State):
         self.back_btn.draw(img)
 
         if len(landmarkList) != 0:
-            x1, y1 = landmarkList[8][1], landmarkList[8][2]
-            x0, y0 = landmarkList[4][1], landmarkList[4][2]
-            if (x1-x0)**2 + (y1-y0)**2 < (1500):
-                if self.back_btn.click([x1, y1]):
-                    return self.mainMenuState(), img
+            for hand in landmarkList:
+                x1, y1 = hand[8][1], hand[8][2]
+                x0, y0 = hand[4][1], hand[4][2]
+                if (x1-x0)**2 + (y1-y0)**2 < (1500):
+                    if self.back_btn.click([x1, y1]):
+                        return self.mainMenuState(), img
         
         return self, img
