@@ -17,8 +17,19 @@ class Button:
         
 
     def draw(self, img):
-        # draw button with openCV
-        cv2.rectangle(img, (self.x, self.y), (self.x + self.w, self.y + self.h), BACKGROUND_COLOR, -1)
+        #cv2.rectangle(img, (self.x, self.y), (self.x + self.w, self.y + self.h), BACKGROUND_COLOR, -1)
+        border_radius = 5
+
+        cv2.ellipse(img, (self.x + border_radius, self.y + border_radius), (border_radius, border_radius), 180, 0, 90, BACKGROUND_COLOR, -1)
+        cv2.ellipse(img, (self.x + self.w - border_radius, self.y + border_radius), (border_radius, border_radius), 270, 0, 90, BACKGROUND_COLOR, -1)
+        #cv2.ellipse(img, (self.x + border_radius, self.y + self.h - border_radius), (border_radius, border_radius), 90, 0, 90, BACKGROUND_COLOR, -1)
+        #cv2.ellipse(img, (self.x + self.w - border_radius, self.y + self.h - border_radius), (border_radius, border_radius), 0, 0, 90, BACKGROUND_COLOR, -1)
+        cv2.rectangle(img, (self.x + border_radius, self.y), (self.x + self.w - border_radius, self.y + border_radius), BACKGROUND_COLOR, -1)
+        cv2.rectangle(img, (self.x, self.y + border_radius), (self.x + self.w, self.y + self.h), BACKGROUND_COLOR, -1)
+
+        #Bottom border
+        cv2.line(img, (self.x, self.y + self.h), (self.x + self.w, self.y + self.h), (54, 54, 179), 3)
+
         # align text in the middle
         font = cv2.FONT_HERSHEY_PLAIN
         text_size = cv2.getTextSize(self.text, font, 3, 1)[0]

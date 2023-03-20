@@ -107,9 +107,7 @@ class PaintingState(State):
                     elif 832<x1<925:
                         hand.brush.setColor(250,160,15)
                     elif 962<x1<1051:
-                        hand.brush.setColor(0,0,0)
-                    elif 1087<x1<1175:
-                        self.imageCanvas.reset() #clears the canvas
+                        self.imageCanvas.reset()
 
                 #Updating the selected color
                 cv2.circle(img, (cx,cy), 1, hand.brush.color, hand.brush.size)
@@ -130,22 +128,13 @@ class PaintingState(State):
             hand.update_reference_points()
 
     def draw_menu(self, hands, img):
-        overlay=cv2.addWeighted(img[0:100, 0:1280],0.2, self.headerImage,0.8, 1)
-        img[0:100, 0:1280] = overlay
+        img = cvzone.overlayPNG(img, self.headerImage, (0, 20))
 
-        #COMBINING BOTH THE IMAGES(Original video frame and the Canvas)
+        # Merge Video capture and Canvas
+        img = self.imageCanvas.merge(img)
 
-        #For thresholding, the first argument is the source image, which should be a grayscale image.
-        imageGray = cv2.cvtColor(self.imageCanvas.canvas, cv2.COLOR_BGR2GRAY) #converted to grayscale
-        #Converting it into binary image(Thresholding)
-        _, imgBinary = cv2.threshold(imageGray,50,255,cv2.THRESH_BINARY_INV)
-        imgBinary = cv2.cvtColor(imgBinary, cv2.COLOR_GRAY2BGR) #imgBinary: Inverted and B&W version of self.imageCanvas
-
-        #Inscribing the black region of imgBinary to main image(img) using bitwise_and operations
-        img = cv2.bitwise_and(img, imgBinary)
-
-        #Adding the original color to the inscribed region using bitwise_or operations
-        img = cv2.bitwise_or(img,self.imageCanvas.canvas)
+        # Logo
+        img = cvzone.overlayPNG(img, self.ni_logo, (20, 20))
 
         self.menu_btn.draw(img)
 
