@@ -1,6 +1,7 @@
 import random
 import cv2
 import time
+import copy
 
 # from predict import predict_image
 import handtrackingmodule as htm  # mediapipe library used in this module
@@ -108,9 +109,9 @@ while True:
     # Importing main image using read() function
     success, img = vCap.read()
 
-    captImg = cv2.flip(img, 1)
+    img = cv2.flip(img, 1)
 
-    imageCanvas.camera = captImg #flipping the video, to compensate lateral inversion
+    imageCanvas.camera = copy.deepcopy(img)
 
     # Finding Hand Landmarks using handtrackingmodule
     img = detector.findHands(img, img)

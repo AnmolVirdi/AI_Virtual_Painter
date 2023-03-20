@@ -194,7 +194,7 @@ class PaintingState(State):
             # cv2.circle(img, (x, y), 1, hand.brush.color, hand.brush.size + hand.indicator_up()*15)
             hand.update_reference_points()
 
-    def draw_menu(self, hands, img):
+    def draw_menu(self, img, hands):
         img = cvzone.overlayPNG(img, self.headerImage, (0, 20))
 
         # Merge Video capture and Canvas
@@ -227,7 +227,8 @@ class FreeModeState(PaintingState):
         for hand in hands:
             if hand.clicked():
                 if self.picture_btn.click(hand.index_tip_position):
-                    cv2.imwrite("foto.png", self.imageCanvas.merge())
+                    cv2.imwrite("desenho.png", self.imageCanvas.canvas)
+                    cv2.imwrite("foto.png", self.imageCanvas.merge_camera())
                     return self.mainMenuState(), img
 
         return state, img
