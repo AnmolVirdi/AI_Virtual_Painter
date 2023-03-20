@@ -1,6 +1,35 @@
 from Brush import Brush
 
+class PositionHistory:
+    def __init__(self, size):
+        self.size = size
+        self.last_positions = [] #list of positions
+
+    def add(self, positions):
+        self.last_positions.append(positions)
+        if len(self.last_positions) > self.size:
+            self.last_positions.pop(0)
+        self.derivative()
+
+    def get(self):
+        return self.last_positions
+    
+    def derivative(self):
+        thumb_history = [x[0] for x in self.last_positions]
+        index_history = [x[1] for x in self.last_positions]
+        distances = [((a[0]-b[0])**2 + (a[1]-b[1])**2) for a, b in zip(index_history, thumb_history)]
+        derivative = [distances[i+1]-distances[i] for i in range(len(distances)-1)]
+        if derivative:
+            return min(derivative)
+        else:
+            return 0
+        
+    def reset(self):
+        self.last_positions = []
+
 class Hand:
+    history = PositionHistory(5)
+
     def __init__(self, brush: Brush, finger_positions, fingers_up) -> None:
         self.brush = brush
         self.update_positions(finger_positions, fingers_up)
@@ -42,10 +71,10 @@ class Hand:
     def pinky_tip_position(self):
         return self.finger_positions[4]
 
-    def update_positions(self, positions, finger_positions):
+    def update_positions(self, positions, fingers_up):
         self.parse_positions(positions)
-        self.fingers_up = finger_positions
-
+        self.fingers_up = fingers_up
+        self.history.add(self.finger_positions)
 
     def indicator_up(self):
         return self.fingers_up[1:5] == [0,1,1,1]
@@ -59,15 +88,20 @@ class Hand:
     def count_fingers_up(self):
         return self.fingers_up[1:5].count(0)
 
-    # Converging or State machine
     def clicked(self):
         thumb_x, thumb_y = self.finger_positions[0]
         indicator_x, indicator_y = self.finger_positions[1]
 
-        return (indicator_x-thumb_x)**2 + (indicator_y-thumb_y)**2 < (1500)
+        if (indicator_x-thumb_x)**2 + (indicator_y-thumb_y)**2 < 1500:
+            if(self.history.derivative() < -1500):
+                print("Clicked!")
+                self.history.reset()
+                return True
+        return False
 
     def update_reference_points(self):
         self.last_drawn = self.finger_positions[1]
 
     def blur(self):
         print("asd")
+
