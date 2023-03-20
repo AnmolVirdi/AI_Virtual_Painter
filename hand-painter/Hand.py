@@ -28,12 +28,11 @@ class PositionHistory:
         self.last_positions = []
 
 class Hand:
-    history = PositionHistory(5)
-
     def __init__(self, brush: Brush, finger_positions, fingers_up) -> None:
         self.brush = brush
         self.update_positions(finger_positions, fingers_up)
         self.last_drawn = None
+        self.history = PositionHistory(5)
 
     def parse_positions(self, positions):
         self.wrist_position = positions[0][1:3]
@@ -74,6 +73,8 @@ class Hand:
     def update_positions(self, positions, fingers_up):
         self.parse_positions(positions)
         self.fingers_up = fingers_up
+        if(not hasattr(self, 'history')):
+            self.history = PositionHistory(5)
         self.history.add(self.finger_positions)
 
     def indicator_up(self):
