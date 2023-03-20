@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import ClassVar
 
+from Timer import Timer
+import math
 import cv2
 from Brush import Brush
 from Ranking import Ranking
@@ -51,6 +53,17 @@ class State:
             self.imageCanvas,
         )
 
+    def pictureTimerState(self):
+        return PictureTimerState(
+            self.headerImage,
+            self.ni_logo,
+            self.ni_banner,
+            self.ranking_img,
+            self.ranking,
+            self.video_height,
+            self.imageCanvas
+        )
+
     def freeModeState(self):
         self.imageCanvas.reset()
         return FreeModeState(
@@ -78,6 +91,22 @@ class State:
     def run(self, img, hand: Hand) -> tuple["State", Mat]:
         pass
 
+class PictureTimerState(State):
+    def __init__(self, headerImage, ni_logo, ni_banner, ranking_img, ranking: Ranking, video_height, imageCanvas: ImageCanvas) -> None:
+        super().__init__(headerImage, ni_logo, ni_banner, ranking_img, ranking, video_height, imageCanvas)
+
+        self.timer = Timer(5)
+
+    def run(self, img, hand: Hand) -> tuple["State", Mat]:
+        img = self.imageCanvas.merge(img)
+        cv2.putText(img, f"Sorri! {math.ceil(self.timer.value)}", (50, 50), cv2.FONT_HERSHEY_PLAIN, 3, self.NI_COLOR_RED, 2)
+
+        if self.timer.completed:
+            cv2.imwrite("desenho.png", self.imageCanvas.canvas)
+            cv2.imwrite("foto.png", self.imageCanvas.merge_camera())
+            return self.mainMenuState(), img
+
+        return self, img
 
 class PaintingState(State):
     ERASER_SMALL: ClassVar[Brush] = Brush(70)
@@ -227,9 +256,7 @@ class FreeModeState(PaintingState):
         for hand in hands:
             if hand.clicked():
                 if self.picture_btn.click(hand.index_tip_position):
-                    cv2.imwrite("desenho.png", self.imageCanvas.canvas)
-                    cv2.imwrite("foto.png", self.imageCanvas.merge_camera())
-                    return self.mainMenuState(), img
+                    return self.pictureTimerState(), img
 
         return state, img
 
