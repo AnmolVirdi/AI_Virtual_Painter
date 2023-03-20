@@ -1,8 +1,7 @@
 import cv2
 import time
 
-# from predict import predict_image
-import handtrackingmodule as htm #mediapipe library used in this module
+import handtrackingmodule as htm
 
 from Hand import Hand
 from Button import Button
@@ -10,31 +9,31 @@ from ImageCanvas import ImageCanvas
 from Brush import Brush
 from Ranking import Ranking
 from State import State, MainMenuState
+from Dataset import Dataset
 
 import math
 
-NI_COLOR_RED = (54, 54, 179) #BGR
+#BGR NIAEFEUP color
+NI_COLOR_RED = (54, 54, 179)
 
 STATE = "main_menu"
 
-cv2.namedWindow("Painter", cv2.WINDOW_AUTOSIZE)
-#Importing header images using os functions
+cv2.namedWindow("Hand Painter", cv2.WINDOW_AUTOSIZE)
 folder_location = "Utilities"
 
-ratio = 16/9
-video_width = 1280
-video_height = int(video_width/ratio)
 headerImage = cv2.imread(f'{folder_location}/Header/header.png', cv2.IMREAD_UNCHANGED)
 ni_logo = cv2.imread(f'{folder_location}/logo.png', cv2.IMREAD_UNCHANGED)
 ni_banner = cv2.imread(f'{folder_location}/banner.png', cv2.IMREAD_UNCHANGED)
 ranking_img = cv2.imread(f'{folder_location}/ranking.png', cv2.IMREAD_UNCHANGED)
-#ranking_img = cv2.resize(ranking_img, (100, 100))
 
 ranking = Ranking()
 
 #Variable to store video using cv2.VideoCapture() function
 vCap = cv2.VideoCapture(0)
 #Setting video resolution to 1280x720
+ratio = 16/9
+video_width = 1280
+video_height = int(video_width/ratio)
 vCap.set(3,video_width)
 vCap.set(4,video_width*ratio)
 
@@ -115,7 +114,10 @@ while True:
 
     # Keyboard Shortcuts
     if key == ord('p'):
-        predict_image(imageCanvas)
+        ds = Dataset()
+        predicts = ds.get_predicts(img)
+        percentage = ds.get_top3(predicts)
+        print(percentage)
     elif key == ord('s'):
         save_image(img)
     elif key == ord('q'):
