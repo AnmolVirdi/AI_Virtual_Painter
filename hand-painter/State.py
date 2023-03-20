@@ -29,8 +29,8 @@ class State:
         self.ranking_btn = Button(500, 500, "RANKING")
         self.controls_btn = Button(900, 100, "CONTROLOS")
         self.back_btn = Button(100, 250, "VOLTAR ATRAS")
-        self.menu_btn = Button(15, video_height - 100, "SAIR")
-        self.exit_btn = Button(900, video_height - 120, "SAIR")
+        self.exit_btn = Button(900, video_height - 100, "SAIR")
+        self.picture_btn = Button(25, video_height - 100, "FOTO")
         self.headerImage = headerImage
         self.ni_logo = ni_logo
         self.ni_banner = ni_banner
@@ -51,9 +51,9 @@ class State:
             self.imageCanvas,
         )
 
-    def paintingState(self):
+    def freeModeState(self):
         self.imageCanvas.reset()
-        return PaintingState(
+        return FreeModeState(
             self.headerImage,
             self.ni_logo,
             self.ni_banner,
@@ -199,26 +199,38 @@ class PaintingState(State):
 
         # Merge Video capture and Canvas
         img = self.imageCanvas.merge(img)
-
+        
         # Logo
         img = cvzone.overlayPNG(img, self.ni_logo, (20, 20))
 
-        self.menu_btn.draw(img)
+        self.exit_btn.draw(img)
 
         # TODO CHANGE THIS TO ABOVE UI?
         for hand in hands:
             if hand.clicked():
-                if self.menu_btn.click(hand.index_tip_position):
+                if self.exit_btn.click(hand.index_tip_position):
                     return self.mainMenuState(), img
 
         return self, img
 
-    def run(self, img, hands: list[Hand]) -> tuple[State, Mat]:
-        state, img = self.draw_menu(hands, img)
+    @abstractmethod
+    def run(self, img, hands: Hand) -> tuple["State", Mat]:
+        pass
+
+class FreeModeState(PaintingState):
+    def run(self, img, hands: Hand) -> tuple["State", Mat]:
         self.paint(img, hands)
+        state, img = self.draw_menu(img, hands)
+
+        self.picture_btn.draw(img)
+
+        for hand in hands:
+            if hand.clicked():
+                if self.picture_btn.click(hand.index_tip_position):
+                    cv2.imwrite("foto.png", self.imageCanvas.merge())
+                    return self.mainMenuState(), img
 
         return state, img
-
 
 class MainMenuState(State):
     def run(self, img, hands: list[Hand]) -> tuple[State, Mat]:
@@ -248,14 +260,15 @@ class MainMenuState(State):
             if not hand.clicked():
                 continue
 
-            if self.free_mode_btn.click(hand.index_tip_position):
-                return self.paintingState(), img
+            if(self.free_mode_btn.click(hand.index_tip_position)):
+                return self.freeModeState(), img
 
-            if self.ranking_btn.click(hand.index_tip_position):
+            if(self.ranking_btn.click(hand.index_tip_position)):
                 return self.rankingState(), img
 
-            if self.exit_btn.click(hand.index_tip_position):
-                sys.exit(0)
+            if(self.exit_btn.click(hand.index_tip_position)):
+                cv2.destroyAllWindows()
+                exit()
 
         return self, img
 

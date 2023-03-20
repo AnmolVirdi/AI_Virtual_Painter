@@ -107,8 +107,10 @@ def merge_hands(previous_hands: list[Hand], landmarks, fingers_up):
 while True:
     # Importing main image using read() function
     success, img = vCap.read()
+
     captImg = cv2.flip(img, 1)
-    img = captImg  # flipping the video, to compensate lateral inversion
+
+    imageCanvas.camera = captImg #flipping the video, to compensate lateral inversion
 
     # Finding Hand Landmarks using handtrackingmodule
     img = detector.findHands(img, img)
