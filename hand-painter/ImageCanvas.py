@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import cv2
+import copy
 
 
 class ImageCanvas:
@@ -12,6 +13,11 @@ class ImageCanvas:
     def reset(self):
         self.canvas = np.zeros((self.height,self.width,3),np.uint8)
         self.camera = np.zeros((self.height,self.width,3),np.uint8)
+
+    def white_canvas(self):
+        image = copy.deepcopy(self.canvas)
+        image[np.where((image==[0,0,0]).all(axis=2))] = [255,255,255]
+        return image
 
     def merge_camera(self):
         # Converting to grayscale

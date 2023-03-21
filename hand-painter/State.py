@@ -102,7 +102,7 @@ class PictureTimerState(State):
         cv2.putText(img, f"Sorri! {math.ceil(self.timer.value)}", (50, 50), cv2.FONT_HERSHEY_PLAIN, 3, self.NI_COLOR_RED, 2)
 
         if self.timer.completed:
-            cv2.imwrite("desenho.png", self.imageCanvas.canvas)
+            cv2.imwrite("desenho.png", self.imageCanvas.white_canvas())
             cv2.imwrite("foto.png", self.imageCanvas.merge_camera())
             return self.mainMenuState(), img
 
