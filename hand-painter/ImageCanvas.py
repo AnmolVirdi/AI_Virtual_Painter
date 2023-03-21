@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 
+
 class ImageCanvas:
     def __init__(self, width, height) -> None:
         self.width = width

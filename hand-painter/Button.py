@@ -3,6 +3,7 @@ import cv2
 BACKGROUND_COLOR = (255, 255, 255)
 TEXT_COLOR = (0, 0, 0)
 
+
 class Button:
     w = 350
     h = 80
@@ -12,9 +13,8 @@ class Button:
         self.y = y
         self.text = text
 
-        if(len(text) > 10):
-            self.w = 30 * len(text) + 60 
-        
+        if len(text) > 10:
+            self.w = 30 * len(text) + 60
 
     def draw(self, img):
         #cv2.rectangle(img, (self.x, self.y), (self.x + self.w, self.y + self.h), BACKGROUND_COLOR, -1)
@@ -40,4 +40,3 @@ class Button:
     def click(self, pos):
         # Check if the mouse is inside the button
         return self.x < pos[0] < self.x + self.w and self.y < pos[1] < self.y + self.h
-    
