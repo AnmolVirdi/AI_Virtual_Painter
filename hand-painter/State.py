@@ -214,8 +214,8 @@ class PaintingState(State):
         return self, img
 
     def run(self, img, hands: list[Hand]) -> tuple[State, Mat]:
-        self.paint(img, hands)
         state, img = self.draw_menu(hands, img)
+        self.paint(img, hands)
 
         return state, img
 

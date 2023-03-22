@@ -1,3 +1,4 @@
+import random
 import cv2
 import time
 
@@ -9,7 +10,7 @@ from Button import Button
 from ImageCanvas import ImageCanvas
 from Brush import Brush
 from Ranking import Ranking
-from State import State, MainMenuState
+from State import PaintingState, State, MainMenuState
 
 import math
 
@@ -90,7 +91,13 @@ def merge_hands(previous_hands: list[Hand], landmarks, fingers_up):
         if match:
             match.update_positions(landmark, fingers_up[idx])
         else:
-            match = Hand(Brush(20), landmark, fingers_up[idx])
+
+            # TODO: choose from leftovers
+            brush = random.choice([PaintingState.RED_BRUSH, PaintingState.BLUE_BRUSH, PaintingState.GREEN_BRUSH, PaintingState.YELLOW_BRUSH, PaintingState.PINK_BRUSH])
+
+            brush.setSize(20)
+
+            match = Hand(brush, landmark, fingers_up[idx])
 
         new_list.append(match)
     return new_list
