@@ -14,6 +14,8 @@ class Hand:
     RING: ClassVar[FingerPosition] = 3
     PINKY: ClassVar[FingerPosition] = 4
 
+    previous_brush: Brush | None = None
+
     def __init__(self, brush: Brush, finger_positions, fingers_up) -> None:
         self.brush = brush
         self.update_positions(finger_positions, fingers_up)

@@ -43,9 +43,17 @@ class handDetector:
         if self.results.multi_hand_landmarks:
             for handLms in self.results.multi_hand_landmarks:
                 if draw:
-                    self.mpDraw.draw_landmarks(img, handLms, self.mpHands.HAND_CONNECTIONS, 
-                        self.mpDraw.DrawingSpec(color=(47,47,255), thickness=2, circle_radius=2), #color of points
-                        self.mpDraw.DrawingSpec(color=(54, 54, 179), thickness=2, circle_radius=2)) #color of connections
+                    self.mpDraw.draw_landmarks(
+                        img,
+                        handLms,
+                        self.mpHands.HAND_CONNECTIONS,
+                        self.mpDraw.DrawingSpec(
+                            color=(47, 47, 255), thickness=2, circle_radius=2
+                        ),  # color of points
+                        self.mpDraw.DrawingSpec(
+                            color=(54, 54, 179), thickness=2, circle_radius=2
+                        ),
+                    )  # color of connections
         return img
 
     # Function to find coordinates of all the landmarks of a particular hand(default= hand number 0). Returns a list of all of them.

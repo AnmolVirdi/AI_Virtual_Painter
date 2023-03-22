@@ -18,17 +18,17 @@ NI_COLOR_RED = (54, 54, 179)  # BGR
 STATE = "main_menu"
 
 cv2.namedWindow("Painter", cv2.WINDOW_AUTOSIZE)
-#Importing header images using os functions
+# Importing header images using os functions
 folder_location = "Utilities"
 
 ratio = 16 / 9
 video_width = 1280
-video_height = int(video_width/ratio)
-headerImage = cv2.imread(f'{folder_location}/Header/header.png', cv2.IMREAD_UNCHANGED)
-ni_logo = cv2.imread(f'{folder_location}/logo.png', cv2.IMREAD_UNCHANGED)
-ni_banner = cv2.imread(f'{folder_location}/banner.png', cv2.IMREAD_UNCHANGED)
-ranking_img = cv2.imread(f'{folder_location}/ranking.png', cv2.IMREAD_UNCHANGED)
-#ranking_img = cv2.resize(ranking_img, (100, 100))
+video_height = int(video_width / ratio)
+headerImage = cv2.imread(f"{folder_location}/Header/header.png", cv2.IMREAD_UNCHANGED)
+ni_logo = cv2.imread(f"{folder_location}/logo.png", cv2.IMREAD_UNCHANGED)
+ni_banner = cv2.imread(f"{folder_location}/banner.png", cv2.IMREAD_UNCHANGED)
+ranking_img = cv2.imread(f"{folder_location}/ranking.png", cv2.IMREAD_UNCHANGED)
+# ranking_img = cv2.resize(ranking_img, (100, 100))
 
 ranking = Ranking()
 

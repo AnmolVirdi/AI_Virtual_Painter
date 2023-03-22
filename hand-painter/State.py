@@ -80,8 +80,8 @@ class State:
 
 
 class PaintingState(State):
-
-    ERASER: ClassVar[Brush] = Brush(20)
+    ERASER_SMALL: ClassVar[Brush] = Brush(70)
+    ERASER_BIG: ClassVar[Brush] = Brush(100)
     RED_BRUSH: ClassVar[Brush] = Brush(20, (45, 45, 240))
     PINK_BRUSH: ClassVar[Brush] = Brush(20, (230, 78, 214))
     YELLOW_BRUSH: ClassVar[Brush] = Brush(20, (15, 245, 245))
@@ -107,6 +107,8 @@ class PaintingState(State):
                 # Selection mode
                 x, y = (x1 + x2) // 2, (y1 + y2) // 2
 
+                cv2.circle(img, (x, y), 1, hand.brush.color, hand.brush.size)
+
                 # color selections(In the header)
                 # Whichever brush_color(region) is selected, it'll get updated in the main window
                 if y1 < 100:
@@ -127,13 +129,18 @@ class PaintingState(State):
                     elif 832 < x1 < 925:
                         hand.set_brush(PaintingState.BLUE_BRUSH)
                     elif 962 < x1 < 1051:
-                        hand.set_brush(PaintingState.ERASER)
+                        pass
+                        # hand.set_brush(PaintingState.ERASER)
                     elif 1087 < x1 < 1175:
                         self.imageCanvas.reset()  # clears the canvas
 
             # Drawing mode: Index finger up
             elif hand.indicator_up():
-                # cv2.circle(img, (x1, y1), 1, hand.brush.color, hand.brush.size + 15)
+                if hand.previous_brush is not None:
+                    hand.set_brush(hand.previous_brush)
+                    hand.previous_brush = None
+
+                cv2.circle(img, (x1, y1), 1, hand.brush.color, hand.brush.size + 15)
                 # Drawing mode
                 # Basically, we'll be drawing random lines which are actually tiny cv2.lines on loop
 
@@ -152,20 +159,42 @@ class PaintingState(State):
                 )
 
             elif 3 <= (hand_count_up := hand.count_fingers_up()) <= 4:
-                hand.brush.setColor(0, 0, 0)
-
-                x, y = (x1 + x2) // 2, (y1 + y2) // 2
+                # get previous size/previous color
+                if hand.previous_brush not in (
+                    PaintingState.ERASER_SMALL,
+                    PaintingState.ERASER_BIG,
+                ):
+                    hand.previous_brush = hand.brush
 
                 if hand_count_up == 3:
-                    print("Small eraser")
-                    hand.brush.setSize(90)
+                    hand.set_brush(PaintingState.ERASER_SMALL)
                 else:
-                    hand.brush.setSize(179)
+                    hand.set_brush(PaintingState.ERASER_BIG)
 
-                    print("Big eraser")
+                if not hand.last_drawn:
+                    hand.update_reference_points()
+
+                x, y = hand.last_drawn
+
+                cv2.circle(img, (x2, y2), hand.brush.size, hand.brush.color)
+                cv2.circle(
+                    self.imageCanvas.canvas,
+                    (x2, y2),
+                    hand.brush.size,
+                    hand.brush.color,
+                    -1,  # any negative value should suffice
+                )
+
+                """                 cv2.circle(
+                    self.imageCanvas.canvas,
+                    (x2, y2),
+                    (x, y),
+                    hand.brush.color,
+                    hand.brush.size,
+                ) """
 
             # Updating the selected color
-            cv2.circle(img, (x, y), 1, hand.brush.color, hand.brush.size + hand.indicator_up()*15)
+            # cv2.circle(img, (x, y), 1, hand.brush.color, hand.brush.size + hand.indicator_up()*15)
             hand.update_reference_points()
 
     def draw_menu(self, hands, img):
@@ -185,15 +214,13 @@ class PaintingState(State):
                 if self.menu_btn.click(hand.index_tip_position):
                     return self.mainMenuState(), img
 
-        return img
-
-    def run(self,
-            img,
-            hands: list[Hand]) -> tuple[State, Mat]:
-        self.paint(img, hands)
-        img = self.draw_menu(hands, img)
-
         return self, img
+
+    def run(self, img, hands: list[Hand]) -> tuple[State, Mat]:
+        self.paint(img, hands)
+        state, img = self.draw_menu(hands, img)
+
+        return state, img
 
 
 class MainMenuState(State):
