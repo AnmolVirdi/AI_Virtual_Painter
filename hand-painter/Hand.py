@@ -63,6 +63,7 @@ class Hand:
             # Pinky finger tip coordinates(landmark number 20)
             positions[20][1:3],
         ]
+        self.all_positions = positions
 
     @property
     def thumb_tip_position(self):
@@ -90,7 +91,6 @@ class Hand:
         if(not hasattr(self, 'history')):
             self.history = PositionHistory(5)
         self.history.add(self.finger_positions)
-        self.fingers_up = finger_positions
 
     def finger(self, finger: FingerPosition):
         return self.fingers_up[finger]
@@ -145,6 +145,16 @@ class Hand:
     def update_reference_points(self):
         self.last_drawn = self.finger_positions[1]
 
-    def blur(self):
-        print("asd")
+    def get_bounding_box(self):
+        x_coordinates = [x[1] for x in self.all_positions]
+        y_coordinates = [x[2] for x in self.all_positions]
+        x_min, x_max = min(x_coordinates), max(x_coordinates)
+        y_min, y_max = min(y_coordinates), max(y_coordinates)
 
+        extra = 10
+        x_min -= extra
+        x_max += extra
+        y_min -= extra
+        y_max += extra
+        
+        return x_min, x_max, y_min, y_max
