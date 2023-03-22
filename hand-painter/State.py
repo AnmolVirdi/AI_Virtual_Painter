@@ -1,8 +1,9 @@
+from TextField import TextField
 from abc import ABC, abstractmethod
 from typing import ClassVar
 
 from Timer import Timer
-from Keyboard import Keyboard
+from Keyboard import Keyboard, KeyboardState
 import math
 import cv2
 from Brush import Brush
@@ -77,7 +78,7 @@ class State:
         )
 
     def freeModeState(self):
-        return self.emailState()
+        # return self.emailState()
         self.imageCanvas.reset()
         return FreeModeState(
             self.headerImage,
@@ -107,10 +108,31 @@ class State:
 class EmailState(State):
     def __init__(self, headerImage, ni_logo, ni_banner, ranking_img, ranking: Ranking, video_height, imageCanvas: ImageCanvas) -> None:
         super().__init__(headerImage, ni_logo, ni_banner, ranking_img, ranking, video_height, imageCanvas)
-        self.keyboard = Keyboard()
+        self.text_field = TextField()
+        self.keyboard = Keyboard(lambda x : self.text_field.type(x))
 
-    def run(self, img, hand: Hand) -> tuple["State", Mat]:
-        self.keyboard.draw(img)
+    def run(self, img, hands: list[Hand]) -> tuple["State", Mat]:
+        self.keyboard.draw(img, hands)
+
+        text_field_ui = Button(50, 50, self.text_field.parsed_value)
+        text_field_ui.draw(img)
+
+        for hand in hands:
+            cv2.circle(
+                img,
+                (hand.index_tip_position[0], hand.index_tip_position[1]),
+                1,
+                self.NI_COLOR_RED,
+                hand.brush.size + 15,
+            )
+
+            kbd_mod = self.keyboard.modifier
+            if self.keyboard.alt_btn.click(hand): 
+                self.keyboard.modifier = KeyboardState.NORMAL if kbd_mod == KeyboardState.ALT else KeyboardState.ALT
+            elif self.keyboard.shift_btn.click(hand):
+                self.keyboard.modifier = KeyboardState.NORMAL if kbd_mod == KeyboardState.SHIFT else KeyboardState.SHIFT
+            elif self.keyboard.delete_btn.click(hand):
+                self.text_field.delete()
 
         return self, img
 
@@ -259,9 +281,8 @@ class PaintingState(State):
 
         # TODO CHANGE THIS TO ABOVE UI?
         for hand in hands:
-            if hand.clicked():
-                if self.exit_btn.click(hand.index_tip_position):
-                    return self.mainMenuState(), img
+            if self.exit_btn.click(hand):
+                return self.mainMenuState(), img
 
         return self, img
 
@@ -273,13 +294,11 @@ class FreeModeState(PaintingState):
     def run(self, img, hands: Hand) -> tuple["State", Mat]:
         self.paint(img, hands)
         state, img = self.draw_menu(img, hands)
-
         self.picture_btn.draw(img)
 
         for hand in hands:
-            if hand.clicked():
-                if self.picture_btn.click(hand.index_tip_position):
-                    return self.pictureTimerState(), img
+            if self.picture_btn.click(hand):
+                return self.pictureTimerState(), img
 
         return state, img
 
@@ -308,16 +327,13 @@ class MainMenuState(State):
                 hand.brush.size + 15,
             )
 
-            if not hand.clicked():
-                continue
-
-            if(self.free_mode_btn.click(hand.index_tip_position)):
+            if(self.free_mode_btn.click(hand)):
                 return self.freeModeState(), img
 
-            if(self.ranking_btn.click(hand.index_tip_position)):
+            if(self.ranking_btn.click(hand)):
                 return self.rankingState(), img
 
-            if(self.exit_btn.click(hand.index_tip_position)):
+            if(self.exit_btn.click(hand)):
                 cv2.destroyAllWindows()
                 exit()
 
@@ -383,9 +399,7 @@ class RankingState(State):
                 hand.brush.size + 15,
             )
 
-            if not hand.clicked():
-                continue
-            if self.back_btn.click(hand.index_tip_position):
+            if self.back_btn.click(hand):
                 return self.mainMenuState(), img
 
         return self, img

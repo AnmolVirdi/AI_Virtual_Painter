@@ -1,3 +1,4 @@
+from TextField import TextField
 from enum import Enum
 from Button import Button
 
@@ -12,7 +13,8 @@ class KeyboardState(Enum):
     ALT = 2
 
 class Keyboard:
-
+    def __init__(self, callback) -> None:
+        self.callback = callback
 
     keys = [
         ["\\", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "'", "«"],
@@ -43,7 +45,7 @@ class Keyboard:
     start_x = 50
     start_y = 200
 
-    def draw(self, img):
+    def draw(self, img, hands):
         match self.modifier:
             case KeyboardState.NORMAL:
                 keys = self.keys
@@ -58,9 +60,9 @@ class Keyboard:
                     continue
                 button = Button(self.start_x + x*90, self.start_y +y * 90, key, 80, 80)
                 button.draw(img)
-    
-        text_field_ui = Button(50, 50, "andre.julio.moreira@hotmail.com") # ?????
-        text_field_ui.draw(img)
+                for hand in hands:
+                    if button.click(hand):
+                        self.callback(key)
 
         self.shift_btn.draw(img)
         self.space_btn.draw(img)

@@ -1,4 +1,5 @@
 import cv2
+from Hand import Hand
 
 BACKGROUND_COLOR = (255, 255, 255)
 TEXT_COLOR = (0, 0, 0)
@@ -72,6 +73,8 @@ class Button:
         text_y = int((self.h + text_size[1]) / 2) + self.y
         cv2.putText(img, self.text, (text_x, text_y), font, 3, TEXT_COLOR, 2)
 
-    def click(self, pos):
+    def click(self, hand: Hand):
+        pos = hand.index_tip_position
+
         # Check if the mouse is inside the button
-        return self.x < pos[0] < self.x + self.w and self.y < pos[1] < self.y + self.h
+        return self.x < pos[0] < self.x + self.w and self.y < pos[1] < self.y + self.h and hand.clicked()
