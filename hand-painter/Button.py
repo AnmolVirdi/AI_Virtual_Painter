@@ -5,13 +5,12 @@ TEXT_COLOR = (0, 0, 0)
 
 
 class Button:
-    w = 350
-    h = 80
-
-    def __init__(self, x, y, text):
+    def __init__(self, x, y, text, width = 350, height = 80):
         self.x = x
         self.y = y
         self.text = text
+        self.w = width
+        self.h = height
 
         if len(text) > 10:
             self.w = 30 * len(text) + 60

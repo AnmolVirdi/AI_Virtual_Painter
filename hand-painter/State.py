@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import ClassVar
 
 from Timer import Timer
+from Keyboard import Keyboard
 import math
 import cv2
 from Brush import Brush
@@ -64,7 +65,19 @@ class State:
             self.imageCanvas
         )
 
+    def emailState(self):
+        return EmailState(
+            self.headerImage,
+            self.ni_logo,
+            self.ni_banner,
+            self.ranking_img,
+            self.ranking,
+            self.video_height,
+            self.imageCanvas
+        )
+
     def freeModeState(self):
+        return self.emailState()
         self.imageCanvas.reset()
         return FreeModeState(
             self.headerImage,
@@ -91,6 +104,16 @@ class State:
     def run(self, img, hand: Hand) -> tuple["State", Mat]:
         pass
 
+class EmailState(State):
+    def __init__(self, headerImage, ni_logo, ni_banner, ranking_img, ranking: Ranking, video_height, imageCanvas: ImageCanvas) -> None:
+        super().__init__(headerImage, ni_logo, ni_banner, ranking_img, ranking, video_height, imageCanvas)
+        self.keyboard = Keyboard()
+
+    def run(self, img, hand: Hand) -> tuple["State", Mat]:
+        self.keyboard.draw(img)
+
+        return self, img
+
 class PictureTimerState(State):
     def __init__(self, headerImage, ni_logo, ni_banner, ranking_img, ranking: Ranking, video_height, imageCanvas: ImageCanvas) -> None:
         super().__init__(headerImage, ni_logo, ni_banner, ranking_img, ranking, video_height, imageCanvas)
@@ -104,7 +127,7 @@ class PictureTimerState(State):
         if self.timer.completed:
             cv2.imwrite("desenho.png", self.imageCanvas.white_canvas())
             cv2.imwrite("foto.png", self.imageCanvas.merge_camera())
-            return self.mainMenuState(), img
+            return self.emailState(), img
 
         return self, img
 
