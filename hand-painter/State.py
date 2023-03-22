@@ -245,18 +245,6 @@ class MainMenuState(State):
                 hand.brush.size + 15,
             )
 
-            #TODO: This should be shared across all states
-            if hand.middle_finger_up():
-                x_min, x_max, y_min, y_max = hand.get_bounding_box()
-
-                y_min = max(0, y_min)
-                y_max = min(img.shape[0], y_max)
-                x_min = max(0, x_min)
-                x_max = min(img.shape[1], x_max)
-
-                img[y_min:y_max, x_min:x_max] = cv2.GaussianBlur(img[y_min:y_max, x_min:x_max], (77, 77), 77)
-
-
             if not hand.clicked():
                 continue
 

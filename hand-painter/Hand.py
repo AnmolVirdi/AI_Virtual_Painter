@@ -91,7 +91,6 @@ class Hand:
         if(not hasattr(self, 'history')):
             self.history = PositionHistory(5)
         self.history.add(self.finger_positions)
-        self.fingers_up = finger_positions
 
     def finger(self, finger: FingerPosition):
         return self.fingers_up[finger]

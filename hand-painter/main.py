@@ -119,12 +119,24 @@ while True:
 
     state, img = state.run(img, hands_list)
 
+    for hand in hands_list:
+        if hand.middle_finger():
+            x_min, x_max, y_min, y_max = hand.get_bounding_box()
+
+            y_min = max(0, y_min)
+            y_max = min(img.shape[0], y_max)
+            x_min = max(0, x_min)
+            x_max = min(img.shape[1], x_max)
+
+            img[y_min:y_max, x_min:x_max] = cv2.GaussianBlur(img[y_min:y_max, x_min:x_max], (77, 77), 77)
+
     cv2.imshow("Painter", img)
     key = cv2.waitKey(1)
 
     # Keyboard Shortcuts
     if key == ord("p"):
-        predict_image(imageCanvas)
+        continue
+        #predict_image(imageCanvas)
     elif key == ord("s"):
         save_image(img)
     elif key == ord("q"):
