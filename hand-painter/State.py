@@ -1,6 +1,12 @@
+import threading
+from TextField import TextField
 from abc import ABC, abstractmethod
 from typing import ClassVar
 
+from Mail import Mail
+from Timer import Timer
+from Keyboard import Keyboard, KeyboardState
+import math
 import cv2
 from Brush import Brush
 from Ranking import Ranking
@@ -29,8 +35,8 @@ class State:
         self.ranking_btn = Button(500, 500, "RANKING")
         self.controls_btn = Button(900, 100, "CONTROLOS")
         self.back_btn = Button(100, 250, "VOLTAR ATRAS")
-        self.menu_btn = Button(15, video_height - 100, "SAIR")
-        self.exit_btn = Button(900, video_height - 120, "SAIR")
+        self.exit_btn = Button(900, video_height - 100, "SAIR")
+        self.picture_btn = Button(25, video_height - 100, "FOTO")
         self.headerImage = headerImage
         self.ni_logo = ni_logo
         self.ni_banner = ni_banner
@@ -51,9 +57,32 @@ class State:
             self.imageCanvas,
         )
 
-    def paintingState(self):
+    def pictureTimerState(self):
+        return PictureTimerState(
+            self.headerImage,
+            self.ni_logo,
+            self.ni_banner,
+            self.ranking_img,
+            self.ranking,
+            self.video_height,
+            self.imageCanvas
+        )
+
+    def emailState(self):
+        return EmailState(
+            self.headerImage,
+            self.ni_logo,
+            self.ni_banner,
+            self.ranking_img,
+            self.ranking,
+            self.video_height,
+            self.imageCanvas
+        )
+
+    def freeModeState(self):
+        # return self.emailState()
         self.imageCanvas.reset()
-        return PaintingState(
+        return FreeModeState(
             self.headerImage,
             self.ni_logo,
             self.ni_banner,
@@ -78,6 +107,56 @@ class State:
     def run(self, img, hand: Hand) -> tuple["State", Mat]:
         pass
 
+class EmailState(State):
+    def __init__(self, headerImage, ni_logo, ni_banner, ranking_img, ranking: Ranking, video_height, imageCanvas: ImageCanvas) -> None:
+        super().__init__(headerImage, ni_logo, ni_banner, ranking_img, ranking, video_height, imageCanvas)
+        self.text_field = TextField()
+        self.keyboard = Keyboard(lambda x : self.text_field.type(x))
+
+    def run(self, img, hands: list[Hand]) -> tuple["State", Mat]:
+        self.keyboard.draw(img, hands)
+
+        text_field_ui = Button(50, 50, self.text_field.parsed_value, 800)
+        text_field_ui.draw(img)
+
+        for hand in hands:
+            cv2.circle(
+                img,
+                (hand.index_tip_position[0], hand.index_tip_position[1]),
+                1,
+                self.NI_COLOR_RED,
+                hand.brush.size + 15,
+            )
+
+            kbd_mod = self.keyboard.modifier
+            if self.keyboard.alt_btn.click(hand): 
+                self.keyboard.modifier = KeyboardState.NORMAL if kbd_mod == KeyboardState.ALT else KeyboardState.ALT
+            elif self.keyboard.shift_btn.click(hand):
+                self.keyboard.modifier = KeyboardState.NORMAL if kbd_mod == KeyboardState.SHIFT else KeyboardState.SHIFT
+            elif self.keyboard.delete_btn.click(hand):
+                self.text_field.delete()
+            elif self.keyboard.submit_btn.click(hand):
+                threading.Thread(target=lambda: Mail().send(self.text_field.parsed_value, ["foto.png", "desenho.png"])).start()
+                return self.mainMenuState(), img
+
+        return self, img
+
+class PictureTimerState(State):
+    def __init__(self, headerImage, ni_logo, ni_banner, ranking_img, ranking: Ranking, video_height, imageCanvas: ImageCanvas) -> None:
+        super().__init__(headerImage, ni_logo, ni_banner, ranking_img, ranking, video_height, imageCanvas)
+
+        self.timer = Timer(5)
+
+    def run(self, img, hand: Hand) -> tuple["State", Mat]:
+        img = self.imageCanvas.merge(img)
+        cv2.putText(img, f"Sorri! {math.ceil(self.timer.value)}", (50, 50), cv2.FONT_HERSHEY_PLAIN, 3, self.NI_COLOR_RED, 2)
+
+        if self.timer.completed:
+            cv2.imwrite("desenho.png", self.imageCanvas.white_canvas())
+            cv2.imwrite("foto.png", self.imageCanvas.merge_camera())
+            return self.emailState(), img
+
+        return self, img
 
 class PaintingState(State):
     ERASER_SMALL: ClassVar[Brush] = Brush(70)
@@ -194,31 +273,39 @@ class PaintingState(State):
             # cv2.circle(img, (x, y), 1, hand.brush.color, hand.brush.size + hand.indicator_up()*15)
             hand.update_reference_points()
 
-    def draw_menu(self, hands, img):
+    def draw_menu(self, img, hands):
         img = cvzone.overlayPNG(img, self.headerImage, (0, 20))
 
         # Merge Video capture and Canvas
         img = self.imageCanvas.merge(img)
-
+        
         # Logo
         img = cvzone.overlayPNG(img, self.ni_logo, (20, 20))
 
-        self.menu_btn.draw(img)
+        self.exit_btn.draw(img)
 
         # TODO CHANGE THIS TO ABOVE UI?
         for hand in hands:
-            if hand.clicked():
-                if self.menu_btn.click(hand.index_tip_position):
-                    return self.mainMenuState(), img
+            if self.exit_btn.click(hand):
+                return self.mainMenuState(), img
 
         return self, img
 
-    def run(self, img, hands: list[Hand]) -> tuple[State, Mat]:
-        state, img = self.draw_menu(hands, img)
+    @abstractmethod
+    def run(self, img, hands: Hand) -> tuple["State", Mat]:
+        pass
+
+class FreeModeState(PaintingState):
+    def run(self, img, hands: Hand) -> tuple["State", Mat]:
         self.paint(img, hands)
+        state, img = self.draw_menu(img, hands)
+        self.picture_btn.draw(img)
+
+        for hand in hands:
+            if self.picture_btn.click(hand):
+                return self.pictureTimerState(), img
 
         return state, img
-
 
 class MainMenuState(State):
     def run(self, img, hands: list[Hand]) -> tuple[State, Mat]:
@@ -245,17 +332,15 @@ class MainMenuState(State):
                 hand.brush.size + 15,
             )
 
-            if not hand.clicked():
-                continue
+            if(self.free_mode_btn.click(hand)):
+                return self.freeModeState(), img
 
-            if self.free_mode_btn.click(hand.index_tip_position):
-                return self.paintingState(), img
-
-            if self.ranking_btn.click(hand.index_tip_position):
+            if(self.ranking_btn.click(hand)):
                 return self.rankingState(), img
 
-            if self.exit_btn.click(hand.index_tip_position):
-                sys.exit(0)
+            if(self.exit_btn.click(hand)):
+                cv2.destroyAllWindows()
+                exit()
 
         return self, img
 
@@ -319,9 +404,7 @@ class RankingState(State):
                 hand.brush.size + 15,
             )
 
-            if not hand.clicked():
-                continue
-            if self.back_btn.click(hand.index_tip_position):
+            if self.back_btn.click(hand):
                 return self.mainMenuState(), img
 
         return self, img
