@@ -15,7 +15,7 @@ import numpy as np
 class handDetector:
     # Constructor, with some default values
     def __init__(
-        self, mode=False, maxHands=2, detectionCon=0.5, modelComplexity=1, trackCon=0.5
+        self, mode=False, maxHands=5, detectionCon=0.5, modelComplexity=1, trackCon=0.5
     ):
         self.mode = mode
         self.maxHands = maxHands
