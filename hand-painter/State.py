@@ -116,7 +116,7 @@ class EmailState(State):
     def run(self, img, hands: list[Hand]) -> tuple["State", Mat]:
         self.keyboard.draw(img, hands)
 
-        text_field_ui = Button(50, 50, self.text_field.parsed_value)
+        text_field_ui = Button(50, 50, self.text_field.parsed_value, 800)
         text_field_ui.draw(img)
 
         for hand in hands:

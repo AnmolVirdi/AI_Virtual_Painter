@@ -13,7 +13,7 @@ class Button:
         self.w = width
         self.h = height
 
-        if len(text) > 10:
+        if len(text) > 10 and (30 * len(text) + 60) > width:
             self.w = 30 * len(text) + 60
 
     def draw(self, img):
