@@ -1,7 +1,9 @@
+import threading
 from TextField import TextField
 from abc import ABC, abstractmethod
 from typing import ClassVar
 
+from Mail import Mail
 from Timer import Timer
 from Keyboard import Keyboard, KeyboardState
 import math
@@ -133,6 +135,9 @@ class EmailState(State):
                 self.keyboard.modifier = KeyboardState.NORMAL if kbd_mod == KeyboardState.SHIFT else KeyboardState.SHIFT
             elif self.keyboard.delete_btn.click(hand):
                 self.text_field.delete()
+            elif self.keyboard.submit_btn.click(hand):
+                threading.Thread(target=lambda: Mail().send(self.text_field.parsed_value, ["foto.png", "desenho.png"])).start()
+                return self.mainMenuState(), img
 
         return self, img
 
