@@ -112,12 +112,18 @@ while True:
 
     img = cv2.flip(img, 1)
 
+    height_reduction = 100
+    width_reduction = int(height_reduction * ratio)
+
     imageCanvas.camera = copy.deepcopy(img)
 
     # Finding Hand Landmarks using handtrackingmodule
     img = detector.findHands(img, img)
     landmarkList = detector.findPositions(img, draw=False)
     hand_fingers = detector.fingersUp()
+
+    cropped_img = img[: video_height - height_reduction, : video_width - width_reduction]
+    img = cv2.resize(cropped_img, (video_width, video_height), interpolation = cv2.INTER_AREA)
 
     hands_list = merge_hands(hands_list, landmarkList, hand_fingers)
 
@@ -134,7 +140,8 @@ while True:
 
             img[y_min:y_max, x_min:x_max] = cv2.GaussianBlur(img[y_min:y_max, x_min:x_max], (77, 77), 77)
 
-    cv2.imshow("Painter", img)
+    
+    cv2.imshow("Hand Painter", img)
     key = cv2.waitKey(1)
 
     # Keyboard Shortcuts
