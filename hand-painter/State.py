@@ -90,8 +90,9 @@ class State:
             self.ranking,
             self.video_height,
             self.imageCanvas,
+            (0, 130, 1280, 720)
         )
-    
+        
     def challengeModeState(self):
         self.imageCanvas.reset()
         return ChallengeModeState(
@@ -101,7 +102,8 @@ class State:
             self.ranking_img,
             self.ranking,
             self.video_height,
-            self.imageCanvas,
+            self.imageCanvas, #(240, 140) #(710, 610)
+            (240, 140, 720, 610)
         )
 
     def rankingState(self):
@@ -171,6 +173,10 @@ class PictureTimerState(State):
         return self, img
 
 class PaintingState(State):
+    def __init__(self, headerImage, ni_logo, ni_banner, ranking_img, ranking: Ranking, video_height, imageCanvas: ImageCanvas, limits) -> None:
+        super().__init__(headerImage, ni_logo, ni_banner, ranking_img, ranking, video_height, imageCanvas)
+        self.limits = limits #tuple[int, int, int, int]
+
     ERASER_SMALL: ClassVar[Brush] = Brush(70)
     ERASER_BIG: ClassVar[Brush] = Brush(100)
     RED_BRUSH: ClassVar[Brush] = Brush(20, (45, 45, 240))
@@ -180,6 +186,18 @@ class PaintingState(State):
     BLUE_BRUSH: ClassVar[Brush] = Brush(20, (250, 160, 15))
 
     def paint(self, img, hands):
+
+        if self.limits:
+            overlay = img.copy()
+            x1, y1, x2, y2 = self.limits
+            x1, y1 = x1 - 1, y1 - 1
+            x2, y2 = x2 + 1, y2 + 1
+            cv2.rectangle(overlay, (0, 0), (x1, img.shape[0]), (0, 0, 0), -1)
+            cv2.rectangle(overlay, (x2, 0), (img.shape[1], img.shape[0]), (0, 0, 0), -1)
+            cv2.rectangle(overlay, (x1, 0), (x2, y1), (0, 0, 0), -1)
+            cv2.rectangle(overlay, (x1, y2), (x2, img.shape[0]), (0, 0, 0), -1)
+            cv2.addWeighted(overlay, 0.5, img, 1 - 0.5, 0, img)
+
         # Add limits parameter for square limits in challenge mode
         for hand in hands:
             # index finger tip coordinates(landmark number 8)
@@ -229,6 +247,7 @@ class PaintingState(State):
                     hand.previous_brush = None
 
                 cv2.circle(img, (x1, y1), 1, hand.brush.color, hand.brush.size + 15)
+                
                 # Drawing mode
                 # Basically, we'll be drawing random lines which are actually tiny cv2.lines on loop
 
@@ -238,6 +257,7 @@ class PaintingState(State):
 
                 x, y = hand.last_drawn
 
+                # TODO: Convert this to a mask and bitwise_and it with the canvas
                 cv2.line(
                     self.imageCanvas.canvas,
                     (x, y),
@@ -245,6 +265,11 @@ class PaintingState(State):
                     hand.brush.color,
                     hand.brush.size,
                 )
+
+                # Create a mask with the limiits
+                mask = np.zeros_like(self.imageCanvas.canvas)
+                mask = cv2.rectangle(mask, (self.limits[0], self.limits[1]), (self.limits[2], self.limits[3]), (255, 255, 255), -1)
+                self.imageCanvas.canvas = cv2.bitwise_and(self.imageCanvas.canvas, mask)
 
             elif 3 <= (hand_count_up := hand.count_fingers_up()) <= 4:
                 # get previous size/previous color
@@ -320,35 +345,22 @@ class FreeModeState(PaintingState):
         return state, img
     
 class ChallengeModeState(PaintingState):
-    def __init__(self, headerImage, ni_logo, ni_banner, ranking_img, ranking: Ranking, video_height, imageCanvas: ImageCanvas) -> None:
-        super().__init__(headerImage, ni_logo, ni_banner, ranking_img, ranking, video_height, imageCanvas)
+    def __init__(self, headerImage, ni_logo, ni_banner, ranking_img, ranking: Ranking, video_height, imageCanvas: ImageCanvas, limits) -> None:
+        super().__init__(headerImage, ni_logo, ni_banner, ranking_img, ranking, video_height, imageCanvas, limits)
         self.word_to_draw = Dataset().get_random_word()
-
 
     def run(self, img, hands: Hand) -> tuple["State", Mat]:
         square_size = 470
         top, left = 140, 240
 
-        overlay = img.copy()
+        self.paint(img, hands)
 
-        # draw rectangles overlay around a square with square_size and starting at 240, 180
-        cv2.rectangle(overlay, (0, 0), (1280, top), (0, 0, 0), -1)
-        cv2.rectangle(overlay, (0, 0), (left, 720), (0, 0, 0), -1)
-
-        cv2.rectangle(overlay, (left + square_size, 0), (1280, 720), (0, 0, 0), -1)
-        cv2.rectangle(overlay, (0, square_size + top), (1280, 720), (0, 0, 0), -1)
-
-        # apply the overlay
-        cv2.addWeighted(overlay, 0.5, img, 1 - 0.5, 0, img)
-        
         offsetX = (left + square_size + 20)
         text1 = "Desenha esta palavra"
         text2 = self.word_to_draw["name_pt"]
 
         img = Text.putTextCenter(img, text1, top+50, offsetX)
         img = Text.putTextCenter(img, text2, top+100, offsetX)
-
-        self.paint(img, hands)
 
         state, img = self.draw_menu(img, hands)
 
@@ -369,7 +381,6 @@ class MainMenuState(State):
         img = self.controls_btn.draw(img)
         img = self.ranking_btn.draw(img)
         img = self.exit_btn.draw(img)
-        img = Button(60, 20, "B", 80, 80).draw(img)
 
         for hand in hands:
             cv2.circle(
