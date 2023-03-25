@@ -1,22 +1,23 @@
 import threading
+from Text import Text
 from TextField import TextField
 from abc import ABC, abstractmethod
 from typing import ClassVar
+import math
+import cv2
+import numpy as np
+from cv2 import Mat
+import cvzone
 
 from Mail import Mail
 from Timer import Timer
 from Keyboard import Keyboard, KeyboardState
-import math
-import cv2
 from Brush import Brush
 from Ranking import Ranking
-import numpy as np
-from cv2 import Mat
-import cvzone
 from ImageCanvas import ImageCanvas
 from Button import Button
-import sys
 from Hand import Hand
+from Dataset import Dataset
 
 
 class State:
@@ -80,9 +81,20 @@ class State:
         )
 
     def freeModeState(self):
-        # return self.emailState()
         self.imageCanvas.reset()
         return FreeModeState(
+            self.headerImage,
+            self.ni_logo,
+            self.ni_banner,
+            self.ranking_img,
+            self.ranking,
+            self.video_height,
+            self.imageCanvas,
+        )
+    
+    def challengeModeState(self):
+        self.imageCanvas.reset()
+        return ChallengeModeState(
             self.headerImage,
             self.ni_logo,
             self.ni_banner,
@@ -282,7 +294,7 @@ class PaintingState(State):
         # Logo
         img = cvzone.overlayPNG(img, self.ni_logo, (20, 20))
 
-        self.exit_btn.draw(img)
+        img = self.exit_btn.draw(img)
 
         # TODO CHANGE THIS TO ABOVE UI?
         for hand in hands:
@@ -299,29 +311,65 @@ class FreeModeState(PaintingState):
     def run(self, img, hands: Hand) -> tuple["State", Mat]:
         self.paint(img, hands)
         state, img = self.draw_menu(img, hands)
-        self.picture_btn.draw(img)
+        img = self.picture_btn.draw(img)
 
         for hand in hands:
             if self.picture_btn.click(hand):
                 return self.pictureTimerState(), img
 
         return state, img
+    
+class ChallengeModeState(PaintingState):
+    def __init__(self, headerImage, ni_logo, ni_banner, ranking_img, ranking: Ranking, video_height, imageCanvas: ImageCanvas) -> None:
+        super().__init__(headerImage, ni_logo, ni_banner, ranking_img, ranking, video_height, imageCanvas)
+        self.word_to_draw = Dataset().get_random_word()
+
+
+    def run(self, img, hands: Hand) -> tuple["State", Mat]:
+        square_size = 470
+        top, left = 140, 240
+
+        overlay = img.copy()
+
+        # draw rectangles overlay around a square with square_size and starting at 240, 180
+        cv2.rectangle(overlay, (0, 0), (1280, top), (0, 0, 0), -1)
+        cv2.rectangle(overlay, (0, 0), (left, 720), (0, 0, 0), -1)
+
+        cv2.rectangle(overlay, (left + square_size, 0), (1280, 720), (0, 0, 0), -1)
+        cv2.rectangle(overlay, (0, square_size + top), (1280, 720), (0, 0, 0), -1)
+
+        # apply the overlay
+        cv2.addWeighted(overlay, 0.5, img, 1 - 0.5, 0, img)
+        
+        offsetX = (left + square_size + 20)
+        text1 = "Desenha esta palavra"
+        text2 = self.word_to_draw["name_pt"]
+
+        img = Text.putTextCenter(img, text1, top+50, offsetX)
+        img = Text.putTextCenter(img, text2, top+100, offsetX)
+
+        self.paint(img, hands)
+
+        state, img = self.draw_menu(img, hands)
+
+        for hand in hands:
+            continue
+
+        return state, img
 
 class MainMenuState(State):
     def run(self, img, hands: list[Hand]) -> tuple[State, Mat]:
-        # create a black overlay with opacity 0.2
-        black_overlay = np.zeros((720, 1280, 3), np.uint8)
-        img = cv2.addWeighted(img[0:720, 0:1280], 0.5, black_overlay, 0.5, 1)
 
         # Logo
         img = cvzone.overlayPNG(img, self.ni_banner, [20, 20])
 
         # Buttons
-        self.free_mode_btn.draw(img)
-        self.challenge_mode_btn.draw(img)
-        self.controls_btn.draw(img)
-        self.ranking_btn.draw(img)
-        self.exit_btn.draw(img)
+        img = self.free_mode_btn.draw(img)
+        img = self.challenge_mode_btn.draw(img)
+        img = self.controls_btn.draw(img)
+        img = self.ranking_btn.draw(img)
+        img = self.exit_btn.draw(img)
+        img = Button(60, 20, "B", 80, 80).draw(img)
 
         for hand in hands:
             cv2.circle(
@@ -334,6 +382,9 @@ class MainMenuState(State):
 
             if(self.free_mode_btn.click(hand)):
                 return self.freeModeState(), img
+            
+            if(self.challenge_mode_btn.click(hand)):
+                return self.challengeModeState(), img
 
             if(self.ranking_btn.click(hand)):
                 return self.rankingState(), img
@@ -393,7 +444,7 @@ class RankingState(State):
             )
 
         # Button
-        self.back_btn.draw(img)
+        img = self.back_btn.draw(img)
 
         for hand in hands:
             cv2.circle(

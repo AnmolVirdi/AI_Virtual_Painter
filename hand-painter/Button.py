@@ -1,9 +1,9 @@
 import cv2
 from Hand import Hand
+from Text import Text
 
 BACKGROUND_COLOR = (255, 255, 255)
 TEXT_COLOR = (0, 0, 0)
-
 
 class Button:
     def __init__(self, x, y, text, width = 350, height = 80):
@@ -40,8 +40,6 @@ class Button:
             BACKGROUND_COLOR,
             -1,
         )
-        # cv2.ellipse(img, (self.x + border_radius, self.y + self.h - border_radius), (border_radius, border_radius), 90, 0, 90, BACKGROUND_COLOR, -1)
-        # cv2.ellipse(img, (self.x + self.w - border_radius, self.y + self.h - border_radius), (border_radius, border_radius), 0, 0, 90, BACKGROUND_COLOR, -1)
         cv2.rectangle(
             img,
             (self.x + border_radius, self.y),
@@ -65,13 +63,9 @@ class Button:
             (54, 54, 179),
             3,
         )
-
         # align text in the middle
-        font = cv2.FONT_HERSHEY_PLAIN
-        text_size = cv2.getTextSize(self.text, font, 3, 1)[0]
-        text_x = int((self.w - text_size[0]) / 2) + self.x
-        text_y = int((self.h + text_size[1]) / 2) + self.y
-        cv2.putText(img, self.text, (text_x, text_y), font, 3, TEXT_COLOR, 2)
+        #cv2.putText(img, self.text, (self.x, self.y), cv2.FONT_HERSHEY_SIMPLEX, 3, TEXT_COLOR, 2)
+        return Text.putTextBox(img, self.text, (self.x, self.y), self.w, self.h, color=TEXT_COLOR)
 
     def click(self, hand: Hand):
         pos = hand.index_tip_position

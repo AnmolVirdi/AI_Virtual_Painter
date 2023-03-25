@@ -20,7 +20,6 @@ NI_COLOR_RED = (54, 54, 179)
 
 STATE = "main_menu"
 
-cv2.namedWindow("Hand Painter", cv2.WINDOW_AUTOSIZE)
 
 # Importing header images using os functions
 folder_location = "Utilities"
@@ -134,23 +133,24 @@ while True:
 
             img[y_min:y_max, x_min:x_max] = cv2.GaussianBlur(img[y_min:y_max, x_min:x_max], (77, 77), 77)
 
-    cv2.imshow("Painter", img)
+    cv2.imshow("Hand Painter", img)
     key = cv2.waitKey(1)
 
     # Keyboard Shortcuts
+    # Press 'p' to predict the image
     if key == ord('p'):
         ds = Dataset()
-        predicts = ds.get_predicts(img)
+        predicts = ds.get_predicts(imageCanvas.canvas)
         percentage = ds.get_top3(predicts)
         print(percentage)
+    
+    # Press 's' to save the image
     elif key == ord('s'):
         save_image(img)
+
+    # Press 'q' to quit the program
     elif key == ord("q"):
         break
-    # elif key == ord('+'): #remove this? or change in all hands?
-    #     brush.increase()
-    # elif key == ord('-'):
-    #     brush.decrease()
 
 cv2.destroyAllWindows()
 exit()
