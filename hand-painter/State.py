@@ -298,14 +298,6 @@ class PaintingState(State):
                     -1,  # any negative value should suffice
                 )
 
-                """                 cv2.circle(
-                    self.imageCanvas.canvas,
-                    (x2, y2),
-                    (x, y),
-                    hand.brush.color,
-                    hand.brush.size,
-                ) """
-
             # Updating the selected color
             # cv2.circle(img, (x, y), 1, hand.brush.color, hand.brush.size + hand.indicator_up()*15)
             hand.update_reference_points()
@@ -422,36 +414,22 @@ class RankingState(State):
 
         # Ranking
         x, y, h = 650, 150, 48
-        cv2.putText(
+        img = Text.putText(
             img,
             "Ranking",
             (x, y - h),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            1.5,
-            self.NI_COLOR_RED,
-            4,
-            cv2.LINE_AA,
+            color = self.NI_COLOR_RED,
         )
         for person in self.ranking.top:
-            cv2.putText(
+            img = Text.putText(
                 img,
                 person["name"],
                 (x, y + h * self.ranking.top.index(person)),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                1.5,
-                (255, 255, 255),
-                2,
-                cv2.LINE_AA,
             )
-            cv2.putText(
+            img = Text.putText(
                 img,
                 str(person["score"]),
                 (x + 400, y + h * self.ranking.top.index(person)),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                1.5,
-                (255, 255, 255),
-                2,
-                cv2.LINE_AA,
             )
 
         # Button

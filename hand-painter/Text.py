@@ -9,6 +9,8 @@ class Text:
     def putText(img, text, coordinates, scale=1, color=(255, 255, 255), thickness=2):
         pil_image = Text.cv2pillow(img)
 
+        color = (color[2], color[1], color[0])
+
         draw = ImageDraw.Draw(pil_image)
         draw.text((coordinates), text, font=Text.font, fill=color)
 
@@ -17,6 +19,8 @@ class Text:
     @staticmethod
     def putTextCenter(img, text, y, offsetX=0, scale=1, color=(255, 255, 255), thickness=2):
         width = 1280 - offsetX
+
+        color = (color[2], color[1], color[0])
 
         pil_image = Text.cv2pillow(img)
         draw = ImageDraw.Draw(pil_image)
@@ -31,8 +35,9 @@ class Text:
         pil_image = Text.cv2pillow(img)
         draw = ImageDraw.Draw(pil_image)
 
+        color = (color[2], color[1], color[0])
+
         _, _, textWidth, textHeight = draw.textbbox((0, 0), text, font=Text.font)
-        print(width, textWidth, height, textHeight, coordinates)
         startX = int((width - textWidth) / 2) + coordinates[0]
         startY = int((height - textHeight) / 2) + coordinates[1]
         draw.text((startX, startY), text, font=Text.font, fill=color)

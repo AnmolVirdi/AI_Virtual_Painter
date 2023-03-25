@@ -10,7 +10,7 @@ import json
 
 class Dataset:
     def __init__(self):
-        f = open('data/labels.json', 'r')
+        f = open('data/labels2.json', 'r')
         self.labels_obj = json.load(f)
         self.labels = list(self.labels_obj.keys())
         f.close()
@@ -66,7 +66,7 @@ class Dataset:
             canvas = canvas.astype('float32')
 
             # Load TFLite model and allocate tensors
-            interpreter = tf.lite.Interpreter(model_path="cnn-model/model.tflite")
+            interpreter = tf.lite.Interpreter(model_path="cnn-model/model2.tflite")
             interpreter.allocate_tensors()
 
             # Set input tensor
