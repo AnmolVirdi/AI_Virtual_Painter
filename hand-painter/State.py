@@ -419,24 +419,7 @@ class RankingState(State):
         )
 
         # Ranking
-        x, y, h = 650, 150, 48
-        img = Text.putText(
-            img,
-            "Ranking",
-            (x, y - h),
-            color = self.NI_COLOR_RED,
-        )
-        for person in self.ranking.top:
-            img = Text.putText(
-                img,
-                person["name"],
-                (x, y + h * self.ranking.top.index(person)),
-            )
-            img = Text.putText(
-                img,
-                str(person["score"]),
-                (x + 400, y + h * self.ranking.top.index(person)),
-            )
+        img = Text.drawRanking(img, self.ranking.top)
 
         # Button
         img = self.back_btn.draw(img, hands)

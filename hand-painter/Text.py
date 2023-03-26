@@ -4,6 +4,7 @@ import numpy as np
 
 class Text:
     font = ImageFont.truetype("./Skrapbook.ttf", 35)
+    NI_COLOR_RED = (179, 54, 54)
 
     @staticmethod
     def putText(img, text, coordinates, scale=1, color=(255, 255, 255), thickness=2):
@@ -41,6 +42,23 @@ class Text:
         startX = int((width - textWidth) / 2) + coordinates[0]
         startY = int((height - textHeight) / 2) + coordinates[1]
         draw.text((startX, startY), text, font=Text.font, fill=color)
+
+        return Text.pillow2cv(pil_image)
+
+    def drawRanking(img, top, color=(255, 255, 255)):
+        pil_image = Text.cv2pillow(img)
+        draw = ImageDraw.Draw(pil_image)
+
+        x, y, h = 650, 150, 48
+
+        draw.text((x, y - h), "Ranking", font=Text.font, fill=Text.NI_COLOR_RED)
+        
+        for person in top:
+            draw.line((x, y + h * top.index(person)-7, x + 480, y + h * top.index(person) - 7), fill=(30, 30, 30), width=1)
+
+            draw.text((x, y + h * top.index(person)), person["name"], font=Text.font, fill=color)
+            draw.text((x + 270, y + h * top.index(person)), str(person["score"]), font=Text.font, fill=color)
+            draw.text((x + 340, y + h * top.index(person)), person["draw"], font=Text.font, fill=color)
 
         return Text.pillow2cv(pil_image)
 
