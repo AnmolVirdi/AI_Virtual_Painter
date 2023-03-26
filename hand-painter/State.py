@@ -19,6 +19,9 @@ from Button import Button
 from Hand import Hand
 from Dataset import Dataset
 
+folder_location = "Utilities"
+normal_keyboard_set = cv2.imread(f"{folder_location}/normal_layout.png", cv2.IMREAD_UNCHANGED)
+shift_keyboard_set = cv2.imread(f"{folder_location}/shift_layout.png", cv2.IMREAD_UNCHANGED)
 
 class State:
     def __init__(
@@ -130,8 +133,13 @@ class EmailState(State):
     def run(self, img, hands: list[Hand]) -> tuple["State", Mat]:
         self.keyboard.draw(img, hands)
 
-        text_field_ui = Button(50, 50, self.text_field.parsed_value, 800)
-        text_field_ui.draw(img)
+        text_field_ui = Button(200, 50, self.text_field.parsed_value, 800)
+        img = text_field_ui.draw(img)
+
+        if self.keyboard.modifier == KeyboardState.NORMAL:
+            img = cvzone.overlayPNG(img, normal_keyboard_set, (0, 0))
+        else:
+            img = cvzone.overlayPNG(img, shift_keyboard_set, (0, 0))
 
         for hand in hands:
             cv2.circle(
@@ -143,9 +151,7 @@ class EmailState(State):
             )
 
             kbd_mod = self.keyboard.modifier
-            if self.keyboard.alt_btn.click(hand): 
-                self.keyboard.modifier = KeyboardState.NORMAL if kbd_mod == KeyboardState.ALT else KeyboardState.ALT
-            elif self.keyboard.shift_btn.click(hand):
+            if self.keyboard.shift_btn.click(hand):
                 self.keyboard.modifier = KeyboardState.NORMAL if kbd_mod == KeyboardState.SHIFT else KeyboardState.SHIFT
             elif self.keyboard.delete_btn.click(hand):
                 self.text_field.delete()
@@ -311,7 +317,7 @@ class PaintingState(State):
         # Logo
         img = cvzone.overlayPNG(img, self.ni_logo, (20, 20))
 
-        img = self.exit_btn.draw(img)
+        img = self.exit_btn.draw(img, hands)
 
         # TODO CHANGE THIS TO ABOVE UI?
         for hand in hands:
@@ -328,7 +334,7 @@ class FreeModeState(PaintingState):
     def run(self, img, hands: Hand) -> tuple["State", Mat]:
         self.paint(img, hands)
         state, img = self.draw_menu(img, hands)
-        img = self.picture_btn.draw(img)
+        img = self.picture_btn.draw(img, hands)
 
         for hand in hands:
             if self.picture_btn.click(hand):
@@ -368,11 +374,11 @@ class MainMenuState(State):
         img = cvzone.overlayPNG(img, self.ni_banner, [20, 20])
 
         # Buttons
-        img = self.free_mode_btn.draw(img)
-        img = self.challenge_mode_btn.draw(img)
-        img = self.controls_btn.draw(img)
-        img = self.ranking_btn.draw(img)
-        img = self.exit_btn.draw(img)
+        img = self.free_mode_btn.draw(img, hands)
+        img = self.challenge_mode_btn.draw(img, hands)
+        img = self.controls_btn.draw(img, hands)
+        img = self.ranking_btn.draw(img, hands)
+        img = self.exit_btn.draw(img, hands)
 
         for hand in hands:
             cv2.circle(
@@ -433,7 +439,7 @@ class RankingState(State):
             )
 
         # Button
-        img = self.back_btn.draw(img)
+        img = self.back_btn.draw(img, hands)
 
         for hand in hands:
             cv2.circle(

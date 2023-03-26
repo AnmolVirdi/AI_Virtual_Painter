@@ -3,6 +3,7 @@ from Hand import Hand
 from Text import Text
 
 BACKGROUND_COLOR = (255, 255, 255)
+BACKGROUND_HOVER_COLOR = (220, 220, 220)
 TEXT_COLOR = (0, 0, 0)
 
 class Button:
@@ -16,9 +17,13 @@ class Button:
         if len(text) > 10 and (30 * len(text) + 60) > width:
             self.w = 30 * len(text) + 60
 
-    def draw(self, img):
-        # cv2.rectangle(img, (self.x, self.y), (self.x + self.w, self.y + self.h), BACKGROUND_COLOR, -1)
+    def drawSimple(self, img, hands : list[Hand] = [], color = BACKGROUND_COLOR):
         border_radius = 5
+
+        # check if one hand is inside the button
+        for hand in hands:
+            if self.hover(hand):
+                color = BACKGROUND_HOVER_COLOR
 
         cv2.ellipse(
             img,
@@ -27,7 +32,7 @@ class Button:
             180,
             0,
             90,
-            BACKGROUND_COLOR,
+            color,
             -1,
         )
         cv2.ellipse(
@@ -37,21 +42,21 @@ class Button:
             270,
             0,
             90,
-            BACKGROUND_COLOR,
+            color,
             -1,
         )
         cv2.rectangle(
             img,
             (self.x + border_radius, self.y),
             (self.x + self.w - border_radius, self.y + border_radius),
-            BACKGROUND_COLOR,
+            color,
             -1,
         )
         cv2.rectangle(
             img,
             (self.x, self.y + border_radius),
             (self.x + self.w, self.y + self.h),
-            BACKGROUND_COLOR,
+            color,
             -1,
         )
 
@@ -63,12 +68,22 @@ class Button:
             (54, 54, 179),
             3,
         )
-        # align text in the middle
-        #cv2.putText(img, self.text, (self.x, self.y), cv2.FONT_HERSHEY_SIMPLEX, 3, TEXT_COLOR, 2)
+
+    def draw(self, img, hands : list[Hand] = []):
+        self.drawSimple(img, hands) 
+
         return Text.putTextBox(img, self.text, (self.x, self.y), self.w, self.h, color=TEXT_COLOR)
 
     def click(self, hand: Hand):
         pos = hand.index_tip_position
-
-        # Check if the mouse is inside the button
         return self.x < pos[0] < self.x + self.w and self.y < pos[1] < self.y + self.h and hand.clicked()
+    
+
+    def hover(self, hand: Hand):
+        index = hand.index_tip_position
+        thumb = hand.thumb_tip_position
+
+        # Medium point between the index finger tip and the thumb tip
+        pos = (index[0] + thumb[0]) / 2, (index[1] + thumb[1]) / 2
+
+        return self.x < pos[0] < self.x + self.w and self.y < pos[1] < self.y + self.h 
