@@ -1,5 +1,6 @@
 import time
 
+
 class Timer:
     def __init__(self, duration) -> None:
         self.final = time.time() + duration

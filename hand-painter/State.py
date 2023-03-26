@@ -65,7 +65,7 @@ class State:
             self.ranking_img,
             self.ranking,
             self.video_height,
-            self.imageCanvas
+            self.imageCanvas,
         )
 
     def emailState(self):
@@ -76,7 +76,7 @@ class State:
             self.ranking_img,
             self.ranking,
             self.video_height,
-            self.imageCanvas
+            self.imageCanvas,
         )
 
     def freeModeState(self):
@@ -107,11 +107,29 @@ class State:
     def run(self, img, hand: Hand) -> tuple["State", Mat]:
         pass
 
+
 class EmailState(State):
-    def __init__(self, headerImage, ni_logo, ni_banner, ranking_img, ranking: Ranking, video_height, imageCanvas: ImageCanvas) -> None:
-        super().__init__(headerImage, ni_logo, ni_banner, ranking_img, ranking, video_height, imageCanvas)
+    def __init__(
+        self,
+        headerImage,
+        ni_logo,
+        ni_banner,
+        ranking_img,
+        ranking: Ranking,
+        video_height,
+        imageCanvas: ImageCanvas,
+    ) -> None:
+        super().__init__(
+            headerImage,
+            ni_logo,
+            ni_banner,
+            ranking_img,
+            ranking,
+            video_height,
+            imageCanvas,
+        )
         self.text_field = TextField()
-        self.keyboard = Keyboard(lambda x : self.text_field.type(x))
+        self.keyboard = Keyboard(lambda x: self.text_field.type(x))
 
     def run(self, img, hands: list[Hand]) -> tuple["State", Mat]:
         self.keyboard.draw(img, hands)
@@ -129,27 +147,65 @@ class EmailState(State):
             )
 
             kbd_mod = self.keyboard.modifier
-            if self.keyboard.alt_btn.click(hand): 
-                self.keyboard.modifier = KeyboardState.NORMAL if kbd_mod == KeyboardState.ALT else KeyboardState.ALT
+            if self.keyboard.alt_btn.click(hand):
+                self.keyboard.modifier = (
+                    KeyboardState.NORMAL
+                    if kbd_mod == KeyboardState.ALT
+                    else KeyboardState.ALT
+                )
             elif self.keyboard.shift_btn.click(hand):
-                self.keyboard.modifier = KeyboardState.NORMAL if kbd_mod == KeyboardState.SHIFT else KeyboardState.SHIFT
+                self.keyboard.modifier = (
+                    KeyboardState.NORMAL
+                    if kbd_mod == KeyboardState.SHIFT
+                    else KeyboardState.SHIFT
+                )
             elif self.keyboard.delete_btn.click(hand):
                 self.text_field.delete()
             elif self.keyboard.submit_btn.click(hand):
-                threading.Thread(target=lambda: Mail().send(self.text_field.parsed_value, ["foto.png", "desenho.png"])).start()
+                threading.Thread(
+                    target=lambda: Mail().send(
+                        self.text_field.parsed_value, ["foto.png", "desenho.png"]
+                    )
+                ).start()
                 return self.mainMenuState(), img
 
         return self, img
 
+
 class PictureTimerState(State):
-    def __init__(self, headerImage, ni_logo, ni_banner, ranking_img, ranking: Ranking, video_height, imageCanvas: ImageCanvas) -> None:
-        super().__init__(headerImage, ni_logo, ni_banner, ranking_img, ranking, video_height, imageCanvas)
+    def __init__(
+        self,
+        headerImage,
+        ni_logo,
+        ni_banner,
+        ranking_img,
+        ranking: Ranking,
+        video_height,
+        imageCanvas: ImageCanvas,
+    ) -> None:
+        super().__init__(
+            headerImage,
+            ni_logo,
+            ni_banner,
+            ranking_img,
+            ranking,
+            video_height,
+            imageCanvas,
+        )
 
         self.timer = Timer(5)
 
     def run(self, img, hand: Hand) -> tuple["State", Mat]:
         img = self.imageCanvas.merge(img)
-        cv2.putText(img, f"Sorri! {math.ceil(self.timer.value)}", (50, 50), cv2.FONT_HERSHEY_PLAIN, 3, self.NI_COLOR_RED, 2)
+        cv2.putText(
+            img,
+            f"Sorri! {math.ceil(self.timer.value)}",
+            (50, 50),
+            cv2.FONT_HERSHEY_PLAIN,
+            3,
+            self.NI_COLOR_RED,
+            2,
+        )
 
         if self.timer.completed:
             cv2.imwrite("desenho.png", self.imageCanvas.white_canvas())
@@ -157,6 +213,7 @@ class PictureTimerState(State):
             return self.emailState(), img
 
         return self, img
+
 
 class PaintingState(State):
     ERASER_SMALL: ClassVar[Brush] = Brush(70)
@@ -278,7 +335,7 @@ class PaintingState(State):
 
         # Merge Video capture and Canvas
         img = self.imageCanvas.merge(img)
-        
+
         # Logo
         img = cvzone.overlayPNG(img, self.ni_logo, (20, 20))
 
@@ -295,6 +352,7 @@ class PaintingState(State):
     def run(self, img, hands: Hand) -> tuple["State", Mat]:
         pass
 
+
 class FreeModeState(PaintingState):
     def run(self, img, hands: Hand) -> tuple["State", Mat]:
         self.paint(img, hands)
@@ -306,6 +364,7 @@ class FreeModeState(PaintingState):
                 return self.pictureTimerState(), img
 
         return state, img
+
 
 class MainMenuState(State):
     def run(self, img, hands: list[Hand]) -> tuple[State, Mat]:
@@ -332,13 +391,13 @@ class MainMenuState(State):
                 hand.brush.size + 15,
             )
 
-            if(self.free_mode_btn.click(hand)):
+            if self.free_mode_btn.click(hand):
                 return self.freeModeState(), img
 
-            if(self.ranking_btn.click(hand)):
+            if self.ranking_btn.click(hand):
                 return self.rankingState(), img
 
-            if(self.exit_btn.click(hand)):
+            if self.exit_btn.click(hand):
                 cv2.destroyAllWindows()
                 exit()
 

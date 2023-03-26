@@ -6,7 +6,7 @@ TEXT_COLOR = (0, 0, 0)
 
 
 class Button:
-    def __init__(self, x, y, text, width = 350, height = 80):
+    def __init__(self, x, y, text, width=350, height=80):
         self.x = x
         self.y = y
         self.text = text
@@ -77,4 +77,8 @@ class Button:
         pos = hand.index_tip_position
 
         # Check if the mouse is inside the button
-        return self.x < pos[0] < self.x + self.w and self.y < pos[1] < self.y + self.h and hand.clicked()
+        return (
+            self.x < pos[0] < self.x + self.w
+            and self.y < pos[1] < self.y + self.h
+            and hand.clicked()
+        )
