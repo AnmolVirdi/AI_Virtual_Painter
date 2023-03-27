@@ -1,13 +1,16 @@
 from enum import Enum
 from Button import Button
 
+
 class KeyboardKey:
     def __init__(self, key) -> None:
         self.key = key
 
+
 class KeyboardState(Enum):
     NORMAL = 0
     SHIFT = 1
+
 
 class Keyboard:
     def __init__(self, callback) -> None:

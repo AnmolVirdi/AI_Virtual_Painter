@@ -4,15 +4,15 @@ class Ranking:
     top = []  # top 10 scores
 
     def __init__(self):
-        df = pd.read_csv('data/ranking.csv')
-        df = df.sort_values(by=['score'], ascending=False)
+        df = pd.read_csv("data/ranking.csv")
+        df = df.sort_values(by=["score"], ascending=False)
         df = df.reset_index(drop=True)
         # df to array of dictionaries
         self.top = df.head(10).to_dict("records")
 
     def readRanking(self):
-        df = pd.read_csv('data/ranking.csv')
-        df = df.sort_values(by=['score'], ascending=False)
+        df = pd.read_csv("data/ranking.csv")
+        df = df.sort_values(by=["score"], ascending=False)
         df = df.reset_index(drop=True)
         self.top = df.head(10)
         return
