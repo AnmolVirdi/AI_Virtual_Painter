@@ -15,8 +15,8 @@ from Dataset import Dataset
 
 import math
 
-#BGR NIAEFEUP color
-NI_COLOR_RED = (54, 54, 179) 
+# BGR NIAEFEUP color
+NI_COLOR_RED = (54, 54, 179)
 
 STATE = "main_menu"
 
@@ -34,10 +34,10 @@ ranking = Ranking()
 
 # Variable to store video using cv2.VideoCapture() function
 vCap = cv2.VideoCapture(0)
-#Setting video resolution to 1280x720
-ratio = 16/9
+# Setting video resolution to 1280x720
+ratio = 16 / 9
 video_width = 1280
-video_height = int(video_width/ratio)
+video_height = int(video_width / ratio)
 vCap.set(3, video_width)
 vCap.set(4, video_width * ratio)
 
@@ -70,18 +70,18 @@ back_btn = Button(100, 250, "VOLTAR ATRAS")
 hands_list: list[Hand] = []
 
 
-def sqrd_distance(pos1, pos2):
-    return math.dist(pos1, pos2)
-
-
-def merge_hands(previous_hands: list[Hand], landmarks, fingers_up):
+def merge_hands(previous_hands: list[Hand], landmarks, fingers_up, offset_ratio=(1, 1)):
     new_list = []
     for idx, landmark in enumerate(landmarks):
         match = None
         best_dist = 10000
+        offset_x_ratio, offset_y_ratio = offset_ratio
         for hand in previous_hands:
             dist = math.dist(
-                (landmark[0][1], landmark[0][2]),
+                (
+                    int(landmark[0][1] * offset_x_ratio),
+                    int(landmark[0][2] * offset_y_ratio),
+                ),
                 (hand.wrist_position[0], hand.wrist_position[1]),
             )
             if dist > 50:
@@ -91,15 +91,22 @@ def merge_hands(previous_hands: list[Hand], landmarks, fingers_up):
                 best_dist = dist
 
         if match:
-            match.update_positions(landmark, fingers_up[idx])
+            match.update_positions(landmark, fingers_up[idx], offset_ratio)
         else:
-
             # TODO: choose from leftovers
-            brush = random.choice([PaintingState.RED_BRUSH, PaintingState.BLUE_BRUSH, PaintingState.GREEN_BRUSH, PaintingState.YELLOW_BRUSH, PaintingState.PINK_BRUSH])
+            brush = random.choice(
+                [
+                    PaintingState.RED_BRUSH,
+                    PaintingState.BLUE_BRUSH,
+                    PaintingState.GREEN_BRUSH,
+                    PaintingState.YELLOW_BRUSH,
+                    PaintingState.PINK_BRUSH,
+                ]
+            )
 
             brush.setSize(20)
 
-            match = Hand(brush, landmark, fingers_up[idx])
+            match = Hand(brush, landmark, fingers_up[idx], offset_ratio)
 
         new_list.append(match)
     return new_list
@@ -112,6 +119,15 @@ while True:
 
     img = cv2.flip(img, 1)
 
+    height_reduction = 150
+    width_reduction = int(height_reduction * ratio)
+
+    old_width, old_height = video_width, video_height
+    new_width, new_height = (
+        video_width - width_reduction,
+        video_height - height_reduction,
+    )
+
     imageCanvas.camera = copy.deepcopy(img)
 
     # Finding Hand Landmarks using handtrackingmodule
@@ -119,7 +135,17 @@ while True:
     landmarkList = detector.findPositions(img, draw=False)
     hand_fingers = detector.fingersUp()
 
-    hands_list = merge_hands(hands_list, landmarkList, hand_fingers)
+    cropped_img = img[:new_height, :new_width]
+    img = cv2.resize(
+        cropped_img, (video_width, video_height), interpolation=cv2.INTER_AREA
+    )
+
+    hands_list = merge_hands(
+        hands_list,
+        landmarkList,
+        hand_fingers,
+        (old_width / new_width, old_height / new_height),
+    )
 
     state, img = state.run(img, hands_list)
 
@@ -132,18 +158,20 @@ while True:
             x_min = max(0, x_min)
             x_max = min(img.shape[1], x_max)
 
-            img[y_min:y_max, x_min:x_max] = cv2.GaussianBlur(img[y_min:y_max, x_min:x_max], (77, 77), 77)
+            img[y_min:y_max, x_min:x_max] = cv2.GaussianBlur(
+                img[y_min:y_max, x_min:x_max], (77, 77), 77
+            )
 
-    cv2.imshow("Painter", img)
+    cv2.imshow("Hand Painter", img)
     key = cv2.waitKey(1)
 
     # Keyboard Shortcuts
-    if key == ord('p'):
+    if key == ord("p"):
         ds = Dataset()
         predicts = ds.get_predicts(img)
         percentage = ds.get_top3(predicts)
         print(percentage)
-    elif key == ord('s'):
+    elif key == ord("s"):
         save_image(img)
     elif key == ord("q"):
         break

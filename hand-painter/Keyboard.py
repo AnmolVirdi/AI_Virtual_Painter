@@ -2,15 +2,18 @@ from TextField import TextField
 from enum import Enum
 from Button import Button
 
+
 class KeyboardKey:
     def __init__(self, key, alt) -> None:
         self.key = key
         self.alt = alt
 
+
 class KeyboardState(Enum):
     NORMAL = 0
     SHIFT = 1
     ALT = 2
+
 
 class Keyboard:
     def __init__(self, callback) -> None:
@@ -18,20 +21,34 @@ class Keyboard:
 
     keys = [
         ["\\", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "'", "«"],
-        ["q","w","e","r","t","y","u","i","o","p", "+", "'"],
-        ["a","s","d","f","g","h","j","k","l","ç"],
-        ["<","z","x","c","v","b","n","m",",",".","-"],
+        ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "+", "'"],
+        ["a", "s", "d", "f", "g", "h", "j", "k", "l", "ç"],
+        ["<", "z", "x", "c", "v", "b", "n", "m", ",", ".", "-"],
     ]
     shift = [
-        ["|","!","\"","#", "$", "%", "&", "/", "(", ")", "=", "?", "»",],
-        ["Q","W","E","R","T","Y","U","I","O","O", "*", "`"],
-        ["A","S","D","F","G","H","J","K","L","Ç"],
-        [">","Z","X","C","V","B","N","M",";",":","_"],
+        [
+            "|",
+            "!",
+            '"',
+            "#",
+            "$",
+            "%",
+            "&",
+            "/",
+            "(",
+            ")",
+            "=",
+            "?",
+            "»",
+        ],
+        ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "O", "*", "`"],
+        ["A", "S", "D", "F", "G", "H", "J", "K", "L", "Ç"],
+        [">", "Z", "X", "C", "V", "B", "N", "M", ";", ":", "_"],
     ]
 
     alt = [
         [None, None, "@", "£", "§", None, None, "{", "[", "]", "}", None, "«"],
-        [None, None, None, None, None, None, None, None, None, None]
+        [None, None, None, None, None, None, None, None, None, None],
     ]
 
     modifier = KeyboardState.NORMAL
@@ -58,7 +75,9 @@ class Keyboard:
             for x, key in enumerate(keyset):
                 if not key:
                     continue
-                button = Button(self.start_x + x*90, self.start_y +y * 90, key, 80, 80)
+                button = Button(
+                    self.start_x + x * 90, self.start_y + y * 90, key, 80, 80
+                )
                 button.draw(img)
                 for hand in hands:
                     if button.click(hand):
