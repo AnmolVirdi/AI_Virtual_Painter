@@ -47,7 +47,7 @@ class Hand:
     RING: ClassVar[FingerPosition] = 3
     PINKY: ClassVar[FingerPosition] = 4
 
-    def __init__(self, brush: Brush, finger_positions, fingers_up, hand_offset_ratio=(1, 1) -> None:
+    def __init__(self, brush: Brush, finger_positions, fingers_up, hand_offset_ratio=(1, 1)) -> None:
         self.brush = brush
         self.update_positions(finger_positions, fingers_up, hand_offset_ratio)
         self.last_drawn = None
