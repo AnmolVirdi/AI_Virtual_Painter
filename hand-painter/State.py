@@ -1,3 +1,4 @@
+import string
 import threading
 from Text import Text
 from TextField import TextField
@@ -176,6 +177,10 @@ class State:
     def run(self, img, hand: Hand) -> tuple["State", Mat]:
         pass
 
+    @abstractmethod
+    def handle_input(self, _input: int):
+        pass
+
 
 class EmailState(State):
     def __init__(
@@ -206,7 +211,104 @@ class EmailState(State):
             move_img,
         )
         self.text_field = TextField()
-        self.keyboard = Keyboard(lambda x: self.text_field.type(x))
+        self.input_handler = lambda x: self.text_field.type(x)
+        self.keyboard = Keyboard(self.input_handler)
+
+        self.submit_handler = threading.Thread(
+            target=lambda: Mail().send(self.get_mail(), ["foto.png", "desenho.png"])
+        )
+
+    def handle_input(self, _input_key: int):
+        if _input_key == Keyboard.ENTER_KEY_CODE:
+            self.submit_handler.start()
+            return False, self.mainMenuState()
+        elif _input_key == Keyboard.SHIFT_KEY_CODE:
+            self.keyboard.modifier = (
+                KeyboardState.NORMAL
+                if self.keyboard.modifier == KeyboardState.SHIFT
+                else KeyboardState.SHIFT
+            )
+            return True, None
+        elif _input_key == Keyboard.BACKSPACE_KEY_CODE:
+            self.text_field.delete()
+            return True, None
+        elif _input_key in (Keyboard.AT_KEY_CODE,):
+            return (
+                True,
+                None,
+            )  # special characters that should not trigger a state change
+        elif (key_char := chr(_input_key)) in string.ascii_lowercase:
+            self.input_handler(
+                chr(ord(key_char) - 32)
+                if self.keyboard.modifier == KeyboardState.SHIFT
+                else key_char
+            )
+            return True, None
+        elif (key_char := chr(_input_key - 32)) in string.ascii_uppercase:
+            self.input_handler(
+                chr(ord(key_char) + 32)
+                if self.keyboard.modifier == KeyboardState.SHIFT
+                else key_char
+            )
+            return True, None
+
+        elif (key_char := chr(_input_key)) in string.digits + "".join(
+            [
+                "\\",
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "0",
+                "'",
+                "«",
+                "+",
+                "-",
+                ".",
+                ",",
+                "@",
+            ]
+        ):
+            # spaghetti
+
+            symbol_map = {
+                "\\": "|",
+                "1": "!",
+                "2": '"',
+                "3": "#",
+                "4": "$",
+                "5": "%",
+                "6": "&",
+                "7": "/",
+                "8": "(",
+                "9": ")",
+                "0": "=",
+                "'": "?",
+                "«": "»",
+                "+": "*",
+                "-": "_",
+                ".": ":",
+                ",": ";",
+            }
+
+            self.input_handler(
+                symbol_map[key_char]
+                if self.keyboard.modifier == KeyboardState.SHIFT and key_char != "@"
+                else key_char
+            )
+            return True, None
+        else:
+            print("Unknown input key", _input_key)
+            return False, self.mainMenuState()
+
+    # spaghetti
+    def get_mail(self):
+        return self.text_field.parsed_value
 
     def run(self, img, hands: list[Hand]) -> tuple["State", Mat]:
         self.keyboard.draw(img, hands)
@@ -238,11 +340,7 @@ class EmailState(State):
             elif self.keyboard.delete_btn.click(hand):
                 self.text_field.delete()
             elif self.keyboard.submit_btn.click(hand):
-                threading.Thread(
-                    target=lambda: Mail().send(
-                        self.text_field.parsed_value, ["foto.png", "desenho.png"]
-                    )
-                ).start()
+                self.submit_handler.start()
                 return self.mainMenuState(), img
 
         return self, img
@@ -278,6 +376,9 @@ class PictureTimerState(State):
         )
 
         self.timer = Timer(5)
+
+    def handle_input(self, _input_key: int):
+        return False, self
 
     def run(self, img, hand: Hand) -> tuple["State", Mat]:
         img = self.imageCanvas.merge(img)
@@ -337,6 +438,9 @@ class PaintingState(State):
     YELLOW_BRUSH: ClassVar[Brush] = Brush(20, (15, 245, 245))
     GREEN_BRUSH: ClassVar[Brush] = Brush(20, (13, 152, 35))
     BLUE_BRUSH: ClassVar[Brush] = Brush(20, (250, 160, 15))
+
+    def handle_input(self, _input_key: int):
+        return False, self
 
     def paint(self, img, hands):
         if self.limits:
@@ -513,6 +617,9 @@ class ChallengeModeState(PaintingState):
         self.word_to_draw = Dataset().get_random_word()
         self.timer = Timer(10)
 
+    def handle_input(self, _input_key: int):
+        return False, self
+
     def run(self, img, hands: Hand) -> tuple["State", Mat]:
         square_size = 470
         top, left = 140, 240
@@ -546,6 +653,9 @@ class ChallengeModeState(PaintingState):
 
 
 class MainMenuState(State):
+    def handle_input(self, _input_key: int):
+        return False, self
+
     def run(self, img, hands: list[Hand]) -> tuple[State, Mat]:
         # Logo
         img = cvzone.overlayPNG(img, self.ni_banner, [20, 20])
@@ -586,6 +696,9 @@ class MainMenuState(State):
 
 
 class RankingState(State):
+    def handle_input(self, _input_key: int):
+        return False, self
+
     def run(self, img, hands: list[Hand]) -> tuple[State, Mat]:
         black_overlay = np.zeros((720, 1280, 3), np.uint8)
         img = cv2.addWeighted(img[0:720, 0:1280], 0.3, black_overlay, 0.5, 1)
@@ -620,6 +733,9 @@ class RankingState(State):
 
 
 class ControlsState(State):
+    def handle_input(self, _input_key: int):
+        return False, self
+
     def __init__(
         self,
         headerImage,

@@ -184,18 +184,18 @@ while True:
     cv2.imshow("Hand Painter", img)
     key = cv2.waitKey(1)
 
-    # Keyboard Shortcuts
-    if key == ord("p"):
-        ds = Dataset()
-        predicts = ds.get_predicts(imageCanvas.canvas)
-        percentage = ds.get_top3(predicts)
-        print(percentage)
-    elif key == ord("s"):
-        save_image(img)
+    if key == -1:
+        continue
+    else:
+        key_consumed, new_state = state.handle_input(key)
 
-    # Press 'q' to quit the program
-    elif key == ord("q"):
-        break
+        if not key_consumed:
+            # Global Keyboard Shortcuts
+            if key == ord("q"):
+                # Press 'q' to quit the program
+                break
+            if new_state != None:
+                state = new_state
 
 cv2.destroyAllWindows()
 exit()

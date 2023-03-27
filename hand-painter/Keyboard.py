@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import ClassVar
 from Button import Button
 
 
@@ -13,6 +14,11 @@ class KeyboardState(Enum):
 
 
 class Keyboard:
+    BACKSPACE_KEY_CODE: ClassVar[int] = 8
+    ENTER_KEY_CODE: ClassVar[int] = 13
+    AT_KEY_CODE: ClassVar[int] = 3
+    SHIFT_KEY_CODE: ClassVar[int] = 225
+
     def __init__(self, callback) -> None:
         self.callback = callback
 
