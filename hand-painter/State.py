@@ -12,7 +12,7 @@ import cvzone
 from Mail import Mail
 from Timer import Timer
 from Keyboard import Keyboard, KeyboardState
-from Brush import Brush
+from Brush import Brush, BigEraser, SmallEraser
 from Ranking import Ranking
 from ImageCanvas import ImageCanvas
 from Button import Button
@@ -38,14 +38,14 @@ class State:
         self.challenge_mode_btn = Button(700, 300, "DESAFIO")
         self.ranking_btn = Button(500, 500, "RANKING")
         self.controls_btn = Button(900, 100, "CONTROLOS")
-        self.back_btn = Button(100, 250, "VOLTAR ATRAS")
+        self.back_btn = Button(100, 250, "VOLTAR ATRÁS")
         self.exit_btn = Button(900, video_height - 100, "SAIR")
         self.picture_btn = Button(25, video_height - 100, "FOTO")
         self.headerImage = headerImage
         self.ni_logo = ni_logo
         self.ni_banner = ni_banner
         self.ranking_img = ranking_img
-        self.NI_COLOR_RED = (54, 54, 179)
+        self.NI_COLOR_RED = (54, 54, 179) #BGR NIAEFEUP color
         self.ranking = ranking
         self.video_height = video_height
         self.imageCanvas = imageCanvas
@@ -105,7 +105,7 @@ class State:
             self.ranking_img,
             self.ranking,
             self.video_height,
-            self.imageCanvas, #(240, 140) #(710, 610)
+            self.imageCanvas,
             (240, 140, 720, 610)
         )
 
@@ -183,8 +183,6 @@ class PaintingState(State):
         super().__init__(headerImage, ni_logo, ni_banner, ranking_img, ranking, video_height, imageCanvas)
         self.limits = limits #tuple[int, int, int, int]
 
-    ERASER_SMALL: ClassVar[Brush] = Brush(70)
-    ERASER_BIG: ClassVar[Brush] = Brush(100)
     RED_BRUSH: ClassVar[Brush] = Brush(20, (45, 45, 240))
     PINK_BRUSH: ClassVar[Brush] = Brush(20, (230, 78, 214))
     YELLOW_BRUSH: ClassVar[Brush] = Brush(20, (15, 245, 245))
@@ -248,14 +246,10 @@ class PaintingState(State):
 
             # Drawing mode: Index finger up
             elif hand.indicator_up():
-                if hand.previous_brush is not None:
-                    hand.set_brush(hand.previous_brush)
-                    hand.previous_brush = None
 
                 cv2.circle(img, (x1, y1), 1, hand.brush.color, hand.brush.size + 15)
                 
                 # Drawing mode
-                # Basically, we'll be drawing random lines which are actually tiny cv2.lines on loop
 
                 # Initialising reference points
                 if not hand.last_drawn:
@@ -263,7 +257,6 @@ class PaintingState(State):
 
                 x, y = hand.last_drawn
 
-                # TODO: Convert this to a mask and bitwise_and it with the canvas
                 cv2.line(
                     self.imageCanvas.canvas,
                     (x, y),
@@ -278,29 +271,19 @@ class PaintingState(State):
                 self.imageCanvas.canvas = cv2.bitwise_and(self.imageCanvas.canvas, mask)
 
             elif 3 <= (hand_count_up := hand.count_fingers_up()) <= 4:
-                # get previous size/previous color
-                if hand.previous_brush not in (
-                    PaintingState.ERASER_SMALL,
-                    PaintingState.ERASER_BIG,
-                ):
-                    hand.previous_brush = hand.brush
-
-                if hand_count_up == 3:
-                    hand.set_brush(PaintingState.ERASER_SMALL)
-                else:
-                    hand.set_brush(PaintingState.ERASER_BIG)
+                eraser = SmallEraser() if hand_count_up == 3 else BigEraser()
 
                 if not hand.last_drawn:
                     hand.update_reference_points()
 
                 x, y = hand.last_drawn
 
-                cv2.circle(img, (x2, y2), hand.brush.size, hand.brush.color)
+                cv2.circle(img, (x2, y2), eraser.size, eraser.color)
                 cv2.circle(
                     self.imageCanvas.canvas,
                     (x2, y2),
-                    hand.brush.size,
-                    hand.brush.color,
+                    eraser.size,
+                    eraser.color,
                     -1,  # any negative value should suffice
                 )
 

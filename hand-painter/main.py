@@ -27,7 +27,6 @@ headerImage = cv2.imread(f"{folder_location}/Header/header.png", cv2.IMREAD_UNCH
 ni_logo = cv2.imread(f"{folder_location}/logo.png", cv2.IMREAD_UNCHANGED)
 ni_banner = cv2.imread(f"{folder_location}/banner.png", cv2.IMREAD_UNCHANGED)
 ranking_img = cv2.imread(f"{folder_location}/ranking.png", cv2.IMREAD_UNCHANGED)
-# ranking_img = cv2.resize(ranking_img, (100, 100))
 
 ranking = Ranking()
 
@@ -59,15 +58,7 @@ def save_image(matrix):
     cv2.imwrite(filename, matrix)
     return
 
-
-free_mode_btn = Button(250, 300, "MODO LIVRE")
-challenge_mode_btn = Button(700, 300, "DESAFIO")
-ranking_btn = Button(500, 500, "RANKING")
-controls_btn = Button(900, 100, "CONTROLOS")
-back_btn = Button(100, 250, "VOLTAR ATRAS")
-
 hands_list: list[Hand] = []
-
 
 def sqrd_distance(pos1, pos2):
     return math.dist(pos1, pos2)
