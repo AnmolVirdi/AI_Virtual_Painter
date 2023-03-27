@@ -3,45 +3,50 @@ from PIL import ImageFont, ImageDraw, Image
 import numpy as np
 
 class Text:
-    font = ImageFont.truetype("./Skrapbook.ttf", 35)
+    font_path = "./Skrapbook.ttf"
+    font = ImageFont.truetype(font_path, 35)
     NI_COLOR_RED = (179, 54, 54)
 
     @staticmethod
-    def putText(img, text, coordinates, scale=1, color=(255, 255, 255), thickness=2):
+    def putText(img, text, coordinates, size=35, color=(255, 255, 255), thickness=2):
         pil_image = Text.cv2pillow(img)
 
+        font = Text.font if size == 35 else ImageFont.truetype("./Skrapbook.ttf", size)
         color = (color[2], color[1], color[0])
 
         draw = ImageDraw.Draw(pil_image)
-        draw.text((coordinates), text, font=Text.font, fill=color)
+        draw.text((coordinates), text, font=font, fill=color)
 
         return Text.pillow2cv(pil_image)
     
     @staticmethod
-    def putTextCenter(img, text, y, offsetX=0, scale=1, color=(255, 255, 255), thickness=2):
+    def putTextCenter(img, text, y, offsetX=0, size=35, color=(255, 255, 255), thickness=2):
         width = 1280 - offsetX
 
+        font = Text.font if size == 35 else ImageFont.truetype("./Skrapbook.ttf", size)
         color = (color[2], color[1], color[0])
 
         pil_image = Text.cv2pillow(img)
         draw = ImageDraw.Draw(pil_image)
-        _, _, textWidth, _ = draw.textbbox((0, 0), text, font=Text.font)
+        _, _, textWidth, _ = draw.textbbox((0, 0), text, font=font)
         medium = int((width - textWidth) / 2)
-        draw.text((( medium + offsetX ), y), text, font=Text.font, fill=color)
+        draw.text((( medium + offsetX ), y), text, font=font, fill=color)
 
         return Text.pillow2cv(pil_image)
     
     @staticmethod
-    def putTextBox(img, text, coordinates, width, height, scale=1, color=(255, 255, 255), thickness=2):
+    def putTextBox(img, text, coordinates, width, height, size=35, color=(255, 255, 255), thickness=2):
         pil_image = Text.cv2pillow(img)
         draw = ImageDraw.Draw(pil_image)
 
+        font = Text.font if size == 35 else ImageFont.truetype("./Skrapbook.ttf", size)
+
         color = (color[2], color[1], color[0])
 
-        _, _, textWidth, textHeight = draw.textbbox((0, 0), text, font=Text.font)
+        _, _, textWidth, textHeight = draw.textbbox((0, 0), text, font=font)
         startX = int((width - textWidth) / 2) + coordinates[0]
         startY = int((height - textHeight) / 2) + coordinates[1]
-        draw.text((startX, startY), text, font=Text.font, fill=color)
+        draw.text((startX, startY), text, font=font, fill=color)
 
         return Text.pillow2cv(pil_image)
 

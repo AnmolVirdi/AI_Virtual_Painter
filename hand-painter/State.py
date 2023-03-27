@@ -169,7 +169,18 @@ class PictureTimerState(State):
 
     def run(self, img, hand: Hand) -> tuple["State", Mat]:
         img = self.imageCanvas.merge(img)
-        cv2.putText(img, f"Sorri! {math.ceil(self.timer.value)}", (50, 50), cv2.FONT_HERSHEY_PLAIN, 3, self.NI_COLOR_RED, 2)
+
+
+        overlay = img.copy()
+        cv2.rectangle(overlay, (0, 0), (1280, 720), (0, 0, 0), -1)
+        overlay_alpha = self.timer.overlay
+        cv2.addWeighted(overlay, overlay_alpha, img, 1 - overlay_alpha, 0, img)
+
+        # Don't show text on 0s, where the picture is taken
+        value = math.ceil(self.timer.value)
+        if value != 0:
+            img = Text.putTextCenter(img, "Sorri!", 300, size=70)
+            img = Text.putTextCenter(img, str(value), 350, size=200)
 
         if self.timer.completed:
             cv2.imwrite("desenho.png", self.imageCanvas.white_canvas())
