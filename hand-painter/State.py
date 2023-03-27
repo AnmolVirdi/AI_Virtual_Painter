@@ -381,6 +381,7 @@ class ChallengeModeState(PaintingState):
     def __init__(self, headerImage, ni_logo, ni_banner, ranking_img, ranking: Ranking, video_height, imageCanvas: ImageCanvas, limits) -> None:
         super().__init__(headerImage, ni_logo, ni_banner, ranking_img, ranking, video_height, imageCanvas, limits)
         self.word_to_draw = Dataset().get_random_word()
+        self.timer = Timer(10)
 
     def run(self, img, hands: Hand) -> tuple["State", Mat]:
         square_size = 470
@@ -394,6 +395,17 @@ class ChallengeModeState(PaintingState):
 
         img = Text.putTextCenter(img, text1, top+50, offsetX)
         img = Text.putTextCenter(img, text2, top+100, offsetX)
+
+        # Don't show text on 0s, where the picture is taken
+        value = math.ceil(self.timer.value)
+        if value != 0:
+            img = Text.putTextCenter(img, "Tempo restante", top + 200, offsetX, size=70)
+            img = Text.putTextCenter(img, str(value), top + 250, offsetX, size=200)
+
+        # if self.timer.completed:
+        #     cv2.imwrite("desenho.png", self.imageCanvas.white_canvas())
+        #     cv2.imwrite("foto.png", self.imageCanvas.merge_camera())
+        #     return self.emailState(), img
 
         state, img = self.draw_menu(img, hands)
 
