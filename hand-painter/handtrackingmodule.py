@@ -39,7 +39,6 @@ class handDetector:
         img1 = cv2.cvtColor(videoCap, cv2.COLOR_BGR2RGB)
         self.results = self.hands.process(img1)
 
-        # print(results.multi_hand_landmarks)
         if self.results.multi_hand_landmarks:
             for handLms in self.results.multi_hand_landmarks:
                 if draw:
@@ -74,7 +73,6 @@ class handDetector:
                 # Converting the relative coordinates(x,y) from lms to original coordinates(cx,cy)
                 cx, cy = int(lm.x * width), int(lm.y * height)
 
-                # print(id, cx, cy)
                 l.append([id, cx, cy])
                 if draw:
                     cv2.circle(img, (cx, cy), 10, (255, 255, 0), cv2.FILLED)

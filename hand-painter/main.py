@@ -20,7 +20,6 @@ NI_COLOR_RED = (54, 54, 179)
 
 STATE = "main_menu"
 
-cv2.namedWindow("Hand Painter", cv2.WINDOW_AUTOSIZE)
 
 # Importing header images using os functions
 folder_location = "Utilities"
@@ -28,7 +27,6 @@ headerImage = cv2.imread(f"{folder_location}/Header/header.png", cv2.IMREAD_UNCH
 ni_logo = cv2.imread(f"{folder_location}/logo.png", cv2.IMREAD_UNCHANGED)
 ni_banner = cv2.imread(f"{folder_location}/banner.png", cv2.IMREAD_UNCHANGED)
 ranking_img = cv2.imread(f"{folder_location}/ranking.png", cv2.IMREAD_UNCHANGED)
-# ranking_img = cv2.resize(ranking_img, (100, 100))
 
 ranking = Ranking()
 
@@ -60,15 +58,10 @@ def save_image(matrix):
     cv2.imwrite(filename, matrix)
     return
 
-
-free_mode_btn = Button(250, 300, "MODO LIVRE")
-challenge_mode_btn = Button(700, 300, "DESAFIO")
-ranking_btn = Button(500, 500, "RANKING")
-controls_btn = Button(900, 100, "CONTROLOS")
-back_btn = Button(100, 250, "VOLTAR ATRAS")
-
 hands_list: list[Hand] = []
 
+def sqrd_distance(pos1, pos2):
+    return math.dist(pos1, pos2)
 
 def merge_hands(previous_hands: list[Hand], landmarks, fingers_up, offset_ratio=(1, 1)):
     new_list = []
@@ -168,17 +161,15 @@ while True:
     # Keyboard Shortcuts
     if key == ord("p"):
         ds = Dataset()
-        predicts = ds.get_predicts(img)
+        predicts = ds.get_predicts(imageCanvas.canvas)
         percentage = ds.get_top3(predicts)
         print(percentage)
     elif key == ord("s"):
         save_image(img)
+
+    # Press 'q' to quit the program
     elif key == ord("q"):
         break
-    # elif key == ord('+'): #remove this? or change in all hands?
-    #     brush.increase()
-    # elif key == ord('-'):
-    #     brush.decrease()
 
 cv2.destroyAllWindows()
 exit()

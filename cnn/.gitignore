@@ -1,5 +1,6 @@
 dataset/
 !.gitkeep
+.quickdrawcache/
 
 logs/
 !.gitkeep

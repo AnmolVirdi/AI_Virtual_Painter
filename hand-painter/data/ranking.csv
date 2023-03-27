@@ -1,12 +1,12 @@
-name,score
-António,70
-Maria,30
-João,50
-Pedro,80
-Ana,90
-Maria,50
-João,70
-Pedro,70
-Joaquim, 100
-Manuel, 32
-Guilherme, 9
+name,score,draw
+António,70,Olho
+Maria,30,Camelo
+João,50,Nuvem
+Pedro,80,Casa
+Ana,90,Sinal de Stop
+Maria,50,Quadrado
+João,70,Casa
+Pedro,70,Camelo
+Joaquim,100,Olho
+Manuel,32,Cara
+Guilherme,9,Olho

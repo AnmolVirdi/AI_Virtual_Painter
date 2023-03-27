@@ -10,13 +10,10 @@ import json
 
 
 class Dataset:
-    def __init__(
-        self,
-    ):
-        f = open("data/labels.json", "r")
+    def __init__(self):
+        f = open('data/labels2.json', 'r')
         self.labels_obj = json.load(f)
         self.labels = list(self.labels_obj.keys())
-        print(self.labels)
         f.close()
 
     def get_random_word(self):
@@ -59,8 +56,10 @@ class Dataset:
 
     def get_predicts(self, canvas):
         try:
+            square_size = 470
+            top, left = 140, 240
             # Cut, convert to grayscale, resize
-            canvas = canvas[0:300, 0:300]
+            canvas = canvas[top:(top+square_size), left:(left+square_size)]
             canvas = cv2.cvtColor(canvas, cv2.COLOR_BGR2GRAY)
             canvas = cv2.bitwise_not(canvas)
             canvas = cv2.resize(canvas, (28, 28))
@@ -77,7 +76,7 @@ class Dataset:
             canvas = canvas.astype("float32")
 
             # Load TFLite model and allocate tensors
-            interpreter = tf.lite.Interpreter(model_path="cnn-model/model.tflite")
+            interpreter = tf.lite.Interpreter(model_path="cnn-model/model2.tflite")
             interpreter.allocate_tensors()
 
             # Set input tensor
