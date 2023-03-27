@@ -10,11 +10,11 @@ class Timer:
     @property
     def value(self):
         return self.final - time.time()
-    
+
     @property
     def overlay(self):
-        return self.value * 0.7 / self.duration 
-    
+        return self.value * 0.7 / self.duration
+
     @property
     def completed(self):
         return time.time() >= self.final

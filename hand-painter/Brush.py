@@ -19,10 +19,12 @@ class Brush:
     def setColor(self, color_b, color_g, color_r):
         self.color = (color_b, color_g, color_r)
 
+
 class BigEraser(Brush):
     def __init__(self):
-        super().__init__(100, (0,0,0))
-    
+        super().__init__(100, (0, 0, 0))
+
+
 class SmallEraser(Brush):
     def __init__(self):
-        super().__init__(70, (0,0,0))
+        super().__init__(70, (0, 0, 0))

@@ -6,6 +6,7 @@ BACKGROUND_COLOR = (255, 255, 255)
 BACKGROUND_HOVER_COLOR = (220, 220, 220)
 TEXT_COLOR = (0, 0, 0)
 
+
 class Button:
     def __init__(self, x, y, text, width=350, height=80):
         self.x = x
@@ -17,7 +18,7 @@ class Button:
         if len(text) > 10 and (30 * len(text) + 60) > width:
             self.w = 30 * len(text) + 60
 
-    def drawSimple(self, img, hands : list[Hand] = [], color = BACKGROUND_COLOR):
+    def drawSimple(self, img, hands: list[Hand] = [], color=BACKGROUND_COLOR):
         border_radius = 5
 
         # check if one hand is inside the button
@@ -69,15 +70,20 @@ class Button:
             3,
         )
 
-    def draw(self, img, hands : list[Hand] = []):
-        self.drawSimple(img, hands) 
+    def draw(self, img, hands: list[Hand] = []):
+        self.drawSimple(img, hands)
 
-        return Text.putTextBox(img, self.text, (self.x, self.y), self.w, self.h, color=TEXT_COLOR)
+        return Text.putTextBox(
+            img, self.text, (self.x, self.y), self.w, self.h, color=TEXT_COLOR
+        )
 
     def click(self, hand: Hand):
         pos = hand.index_tip_position
-        return self.x < pos[0] < self.x + self.w and self.y < pos[1] < self.y + self.h and hand.clicked()
-    
+        return (
+            self.x < pos[0] < self.x + self.w
+            and self.y < pos[1] < self.y + self.h
+            and hand.clicked()
+        )
 
     def hover(self, hand: Hand):
         index = hand.index_tip_position
@@ -86,4 +92,4 @@ class Button:
         # Medium point between the index finger tip and the thumb tip
         pos = (index[0] + thumb[0]) / 2, (index[1] + thumb[1]) / 2
 
-        return self.x < pos[0] < self.x + self.w and self.y < pos[1] < self.y + self.h 
+        return self.x < pos[0] < self.x + self.w and self.y < pos[1] < self.y + self.h

@@ -27,6 +27,19 @@ headerImage = cv2.imread(f"{folder_location}/Header/header.png", cv2.IMREAD_UNCH
 ni_logo = cv2.imread(f"{folder_location}/logo.png", cv2.IMREAD_UNCHANGED)
 ni_banner = cv2.imread(f"{folder_location}/banner.png", cv2.IMREAD_UNCHANGED)
 ranking_img = cv2.imread(f"{folder_location}/ranking.png", cv2.IMREAD_UNCHANGED)
+click_img = cv2.imread(
+    f"{folder_location}/Controls/click-control.png", cv2.IMREAD_UNCHANGED
+)
+erase_img = cv2.imread(
+    f"{folder_location}/Controls/clean-control.png", cv2.IMREAD_UNCHANGED
+)
+paint_img = cv2.imread(
+    f"{folder_location}/Controls/paint-control.png", cv2.IMREAD_UNCHANGED
+)
+move_img = cv2.imread(
+    f"{folder_location}/Controls/move-control.png", cv2.IMREAD_UNCHANGED
+)
+# ranking_img = cv2.resize(ranking_img, (100, 100))
 
 ranking = Ranking()
 
@@ -48,7 +61,17 @@ detector = htm.handDetector(detectionCon=0.85)
 imageCanvas = ImageCanvas(1280, 720)
 
 state: State = MainMenuState(
-    headerImage, ni_logo, ni_banner, ranking_img, ranking, video_height, imageCanvas
+    headerImage,
+    ni_logo,
+    ni_banner,
+    ranking_img,
+    ranking,
+    video_height,
+    imageCanvas,
+    click_img,
+    erase_img,
+    paint_img,
+    move_img,
 )
 
 
@@ -58,10 +81,13 @@ def save_image(matrix):
     cv2.imwrite(filename, matrix)
     return
 
+
 hands_list: list[Hand] = []
+
 
 def sqrd_distance(pos1, pos2):
     return math.dist(pos1, pos2)
+
 
 def merge_hands(previous_hands: list[Hand], landmarks, fingers_up, offset_ratio=(1, 1)):
     new_list = []

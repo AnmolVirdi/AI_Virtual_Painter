@@ -1,5 +1,6 @@
 import pandas as pd
 
+
 class Ranking:
     top = []  # top 10 scores
 
@@ -18,9 +19,9 @@ class Ranking:
         return
 
     def insertScore(self, name, score, draw):
-        df = pd.read_csv('data/ranking.csv')
-        df = df.append({'name': name, 'score':score, 'draw':draw}, ignore_index=True)
-        df = df.sort_values(by=['score'], ascending=False)
+        df = pd.read_csv("data/ranking.csv")
+        df = df.append({"name": name, "score": score, "draw": draw}, ignore_index=True)
+        df = df.sort_values(by=["score"], ascending=False)
         df = df.reset_index(drop=True)
         df.to_csv("ranking.csv", index=False)
         self.top = df.head(10)

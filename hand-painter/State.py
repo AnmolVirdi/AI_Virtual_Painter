@@ -20,8 +20,13 @@ from Hand import Hand
 from Dataset import Dataset
 
 folder_location = "Utilities"
-normal_keyboard_set = cv2.imread(f"{folder_location}/normal_layout.png", cv2.IMREAD_UNCHANGED)
-shift_keyboard_set = cv2.imread(f"{folder_location}/shift_layout.png", cv2.IMREAD_UNCHANGED)
+normal_keyboard_set = cv2.imread(
+    f"{folder_location}/normal_layout.png", cv2.IMREAD_UNCHANGED
+)
+shift_keyboard_set = cv2.imread(
+    f"{folder_location}/shift_layout.png", cv2.IMREAD_UNCHANGED
+)
+
 
 class State:
     def __init__(
@@ -33,6 +38,10 @@ class State:
         ranking: Ranking,
         video_height,
         imageCanvas: ImageCanvas,
+        click_img,
+        erase_img,
+        paint_img,
+        move_img,
     ) -> None:
         self.free_mode_btn = Button(250, 300, "MODO LIVRE")
         self.challenge_mode_btn = Button(700, 300, "DESAFIO")
@@ -45,10 +54,14 @@ class State:
         self.ni_logo = ni_logo
         self.ni_banner = ni_banner
         self.ranking_img = ranking_img
-        self.NI_COLOR_RED = (54, 54, 179) #BGR NIAEFEUP color
+        self.NI_COLOR_RED = (54, 54, 179)  # BGR NIAEFEUP color
         self.ranking = ranking
         self.video_height = video_height
         self.imageCanvas = imageCanvas
+        self.click_img = click_img
+        self.erase_img = erase_img
+        self.paint_img = paint_img
+        self.move_img = move_img
 
     def mainMenuState(self):
         return MainMenuState(
@@ -59,6 +72,10 @@ class State:
             self.ranking,
             self.video_height,
             self.imageCanvas,
+            self.click_img,
+            self.erase_img,
+            self.paint_img,
+            self.move_img,
         )
 
     def pictureTimerState(self):
@@ -70,6 +87,10 @@ class State:
             self.ranking,
             self.video_height,
             self.imageCanvas,
+            self.click_img,
+            self.erase_img,
+            self.paint_img,
+            self.move_img,
         )
 
     def emailState(self):
@@ -81,6 +102,10 @@ class State:
             self.ranking,
             self.video_height,
             self.imageCanvas,
+            self.click_img,
+            self.erase_img,
+            self.paint_img,
+            self.move_img,
         )
 
     def freeModeState(self):
@@ -93,9 +118,13 @@ class State:
             self.ranking,
             self.video_height,
             self.imageCanvas,
-            (0, 130, 1280, 720)
+            (0, 130, 1280, 720),
+            self.click_img,
+            self.erase_img,
+            self.paint_img,
+            self.move_img,
         )
-        
+
     def challengeModeState(self):
         self.imageCanvas.reset()
         return ChallengeModeState(
@@ -106,7 +135,11 @@ class State:
             self.ranking,
             self.video_height,
             self.imageCanvas,
-            (240, 140, 720, 610)
+            (240, 140, 720, 610),
+            self.click_img,
+            self.erase_img,
+            self.paint_img,
+            self.move_img,
         )
 
     def rankingState(self):
@@ -118,6 +151,25 @@ class State:
             self.ranking,
             self.video_height,
             self.imageCanvas,
+            self.click_img,
+            self.erase_img,
+            self.paint_img,
+            self.move_img,
+        )
+
+    def controlsState(self):
+        return ControlsState(
+            self.headerImage,
+            self.ni_logo,
+            self.ni_banner,
+            self.ranking_img,
+            self.ranking,
+            self.video_height,
+            self.imageCanvas,
+            self.click_img,
+            self.erase_img,
+            self.paint_img,
+            self.move_img,
         )
 
     @abstractmethod
@@ -135,6 +187,10 @@ class EmailState(State):
         ranking: Ranking,
         video_height,
         imageCanvas: ImageCanvas,
+        click_img,
+        erase_img,
+        paint_img,
+        move_img,
     ) -> None:
         super().__init__(
             headerImage,
@@ -144,6 +200,10 @@ class EmailState(State):
             ranking,
             video_height,
             imageCanvas,
+            click_img,
+            erase_img,
+            paint_img,
+            move_img,
         )
         self.text_field = TextField()
         self.keyboard = Keyboard(lambda x: self.text_field.type(x))
@@ -170,7 +230,11 @@ class EmailState(State):
 
             kbd_mod = self.keyboard.modifier
             if self.keyboard.shift_btn.click(hand):
-                self.keyboard.modifier = KeyboardState.NORMAL if kbd_mod == KeyboardState.SHIFT else KeyboardState.SHIFT
+                self.keyboard.modifier = (
+                    KeyboardState.NORMAL
+                    if kbd_mod == KeyboardState.SHIFT
+                    else KeyboardState.SHIFT
+                )
             elif self.keyboard.delete_btn.click(hand):
                 self.text_field.delete()
             elif self.keyboard.submit_btn.click(hand):
@@ -194,6 +258,10 @@ class PictureTimerState(State):
         ranking: Ranking,
         video_height,
         imageCanvas: ImageCanvas,
+        click_img,
+        erase_img,
+        paint_img,
+        move_img,
     ) -> None:
         super().__init__(
             headerImage,
@@ -203,13 +271,17 @@ class PictureTimerState(State):
             ranking,
             video_height,
             imageCanvas,
+            click_img,
+            erase_img,
+            paint_img,
+            move_img,
         )
 
         self.timer = Timer(5)
 
     def run(self, img, hand: Hand) -> tuple["State", Mat]:
         img = self.imageCanvas.merge(img)
-        
+
         overlay = img.copy()
         cv2.rectangle(overlay, (0, 0), (1280, 720), (0, 0, 0), -1)
         overlay_alpha = self.timer.overlay
@@ -230,9 +302,35 @@ class PictureTimerState(State):
 
 
 class PaintingState(State):
-    def __init__(self, headerImage, ni_logo, ni_banner, ranking_img, ranking: Ranking, video_height, imageCanvas: ImageCanvas, limits) -> None:
-        super().__init__(headerImage, ni_logo, ni_banner, ranking_img, ranking, video_height, imageCanvas)
-        self.limits = limits #tuple[int, int, int, int]
+    def __init__(
+        self,
+        headerImage,
+        ni_logo,
+        ni_banner,
+        ranking_img,
+        ranking: Ranking,
+        video_height,
+        imageCanvas: ImageCanvas,
+        limits,
+        click_img,
+        erase_img,
+        paint_img,
+        move_img,
+    ) -> None:
+        super().__init__(
+            headerImage,
+            ni_logo,
+            ni_banner,
+            ranking_img,
+            ranking,
+            video_height,
+            imageCanvas,
+            click_img,
+            erase_img,
+            paint_img,
+            move_img,
+        )
+        self.limits = limits  # tuple[int, int, int, int]
 
     RED_BRUSH: ClassVar[Brush] = Brush(20, (45, 45, 240))
     PINK_BRUSH: ClassVar[Brush] = Brush(20, (230, 78, 214))
@@ -241,7 +339,6 @@ class PaintingState(State):
     BLUE_BRUSH: ClassVar[Brush] = Brush(20, (250, 160, 15))
 
     def paint(self, img, hands):
-
         if self.limits:
             overlay = img.copy()
             x1, y1, x2, y2 = self.limits
@@ -297,9 +394,8 @@ class PaintingState(State):
 
             # Drawing mode: Index finger up
             elif hand.indicator_up():
-
                 cv2.circle(img, (x1, y1), 1, hand.brush.color, hand.brush.size + 15)
-                
+
                 # Drawing mode
 
                 # Initialising reference points
@@ -318,7 +414,13 @@ class PaintingState(State):
 
                 # Create a mask with the limiits
                 mask = np.zeros_like(self.imageCanvas.canvas)
-                mask = cv2.rectangle(mask, (self.limits[0], self.limits[1]), (self.limits[2], self.limits[3]), (255, 255, 255), -1)
+                mask = cv2.rectangle(
+                    mask,
+                    (self.limits[0], self.limits[1]),
+                    (self.limits[2], self.limits[3]),
+                    (255, 255, 255),
+                    -1,
+                )
                 self.imageCanvas.canvas = cv2.bitwise_and(self.imageCanvas.canvas, mask)
 
             elif 3 <= (hand_count_up := hand.count_fingers_up()) <= 4:
@@ -376,10 +478,38 @@ class FreeModeState(PaintingState):
                 return self.pictureTimerState(), img
 
         return state, img
-    
+
+
 class ChallengeModeState(PaintingState):
-    def __init__(self, headerImage, ni_logo, ni_banner, ranking_img, ranking: Ranking, video_height, imageCanvas: ImageCanvas, limits) -> None:
-        super().__init__(headerImage, ni_logo, ni_banner, ranking_img, ranking, video_height, imageCanvas, limits)
+    def __init__(
+        self,
+        headerImage,
+        ni_logo,
+        ni_banner,
+        ranking_img,
+        ranking: Ranking,
+        video_height,
+        imageCanvas: ImageCanvas,
+        limits,
+        click_img,
+        erase_img,
+        paint_img,
+        move_img,
+    ) -> None:
+        super().__init__(
+            headerImage,
+            ni_logo,
+            ni_banner,
+            ranking_img,
+            ranking,
+            video_height,
+            imageCanvas,
+            limits,
+            click_img,
+            erase_img,
+            paint_img,
+            move_img,
+        )
         self.word_to_draw = Dataset().get_random_word()
         self.timer = Timer(10)
 
@@ -389,12 +519,12 @@ class ChallengeModeState(PaintingState):
 
         self.paint(img, hands)
 
-        offsetX = (left + square_size + 20)
+        offsetX = left + square_size + 20
         text1 = "Desenha esta palavra"
         text2 = self.word_to_draw["name_pt"]
 
-        img = Text.putTextCenter(img, text1, top+50, offsetX)
-        img = Text.putTextCenter(img, text2, top+100, offsetX)
+        img = Text.putTextCenter(img, text1, top + 50, offsetX)
+        img = Text.putTextCenter(img, text2, top + 100, offsetX)
 
         # Don't show text on 0s, where the picture is taken
         value = math.ceil(self.timer.value)
@@ -417,7 +547,6 @@ class ChallengeModeState(PaintingState):
 
 class MainMenuState(State):
     def run(self, img, hands: list[Hand]) -> tuple[State, Mat]:
-
         # Logo
         img = cvzone.overlayPNG(img, self.ni_banner, [20, 20])
 
@@ -439,12 +568,15 @@ class MainMenuState(State):
 
             if self.free_mode_btn.click(hand):
                 return self.freeModeState(), img
-            
-            if(self.challenge_mode_btn.click(hand)):
+
+            if self.challenge_mode_btn.click(hand):
                 return self.challengeModeState(), img
 
             if self.ranking_btn.click(hand):
                 return self.rankingState(), img
+
+            if self.controls_btn.click(hand):
+                return self.controlsState(), img
 
             if self.exit_btn.click(hand):
                 cv2.destroyAllWindows()
@@ -480,6 +612,112 @@ class RankingState(State):
                 self.NI_COLOR_RED,
                 hand.brush.size + 15,
             )
+
+            if self.back_btn.click(hand):
+                return self.mainMenuState(), img
+
+        return self, img
+
+
+class ControlsState(State):
+    def __init__(
+        self,
+        headerImage,
+        ni_logo,
+        ni_banner,
+        ranking_img,
+        ranking: Ranking,
+        video_height,
+        imageCanvas: ImageCanvas,
+        click_img,
+        erase_img,
+        paint_img,
+        move_img,
+    ) -> None:
+        super().__init__(
+            headerImage,
+            ni_logo,
+            ni_banner,
+            ranking_img,
+            ranking,
+            video_height,
+            imageCanvas,
+            click_img,
+            erase_img,
+            paint_img,
+            move_img,
+        )
+
+    def run(self, img, hands: list[Hand]):
+        black_overlay = np.zeros((720, 1280, 3), np.uint8)
+        img = cv2.addWeighted(img[0:720, 0:1280], 0.3, black_overlay, 0.5, 1)
+
+        # Controls
+        x, y, h = 650, 150, 48
+
+        img = Text.putText(img, "Controls", (x, y - 2 * h))
+
+        icon_width, icon_height = 70, 70
+        icon_size = (icon_width, icon_height)
+
+        # TODO: add interactive controls
+        # a success indications should be shown when doing the right movement on top of each control display
+
+        for i, item in enumerate(
+            [
+                (
+                    self.click_img,
+                    "Aperta os dedos para clickar na\nárea do ecrã debaixo deles",
+                ),
+                (self.paint_img, "Levanta o indicador para\npintares no ecrã"),
+                (
+                    self.move_img,
+                    "Levanta o indicador e o dedo do\nmeio para mover o pincel sem pintar",
+                ),
+                (self.erase_img, "Levanta 3/4 dedos para\napagares partes do desenho"),
+            ]
+        ):
+            icon, description = item
+
+            # spaghetti
+
+            img = cvzone.overlayPNG(
+                img,
+                cv2.resize(icon, icon_size, interpolation=cv2.INTER_AREA),
+                (x, 150 + icon_height * 2 * i),
+            )
+
+            img = Text.putText(
+                img, description, (x + icon_width + 15, 155 + icon_height * 2 * i), 30
+            )
+
+        # Button
+        img = self.back_btn.draw(img, hands)
+
+        for hand in hands:
+            x1, y1 = hand.index_tip_position
+            x2, y2 = hand.middle_tip_position
+
+            if hand.indicator_and_middle_up():
+                x, y = (x1 + x2) // 2, (y1 + y2) // 2
+
+                cv2.circle(img, (x, y), 1, self.NI_COLOR_RED, 20)
+
+            elif hand.indicator_up():
+                cv2.circle(img, (x1, y1), 1, self.NI_COLOR_RED, 35)
+
+                if not hand.last_drawn:
+                    hand.update_reference_points()
+
+            elif 3 <= (hand_count_up := hand.count_fingers_up()) <= 4:
+                eraser = SmallEraser() if hand_count_up == 3 else BigEraser()
+
+                if not hand.last_drawn:
+                    hand.update_reference_points()
+
+                cv2.circle(img, (x2, y2), eraser.size, self.NI_COLOR_RED)
+
+            hand.update_reference_points()
 
             if self.back_btn.click(hand):
                 return self.mainMenuState(), img

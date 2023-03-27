@@ -18,15 +18,15 @@ class Keyboard:
 
     keys = [
         ["\\", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0"],
-        ["q","w","e","r","t","y","u","i","o","p", "+", "'"],
-        ["a","s","d","f","g","h","j","k","l","ç", "@"],
-        ["<","z","x","c","v","b","n","m",",",".","-"],
+        ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "+", "'"],
+        ["a", "s", "d", "f", "g", "h", "j", "k", "l", "ç", "@"],
+        ["<", "z", "x", "c", "v", "b", "n", "m", ",", ".", "-"],
     ]
     shift = [
-        ["|","!","\"","#", "$", "%", "&", "/", "(", ")", "?"],
-        ["Q","W","E","R","T","Y","U","I","O","O", "*", "="],
-        ["A","S","D","F","G","H","J","K","L","Ç", "@"],
-        [">","Z","X","C","V","B","N","M",";",":","_"],
+        ["|", "!", '"', "#", "$", "%", "&", "/", "(", ")", "?"],
+        ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "O", "*", "="],
+        ["A", "S", "D", "F", "G", "H", "J", "K", "L", "Ç", "@"],
+        [">", "Z", "X", "C", "V", "B", "N", "M", ";", ":", "_"],
     ]
 
     modifier = KeyboardState.NORMAL
@@ -50,13 +50,14 @@ class Keyboard:
             for x, key in enumerate(keyset):
                 if not key:
                     continue
-                button = Button(self.start_x + x*90, self.start_y +y * 90, key, 80, 80)
+                button = Button(
+                    self.start_x + x * 90, self.start_y + y * 90, key, 80, 80
+                )
                 button.drawSimple(img, hands)
                 for hand in hands:
                     if button.click(hand):
                         self.callback(key)
 
-        
         self.shift_btn.drawSimple(img, hands)
         self.space_btn.drawSimple(img, hands)
         self.delete_btn.drawSimple(img, hands)

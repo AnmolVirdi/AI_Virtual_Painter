@@ -2,6 +2,7 @@ import cv2
 from PIL import ImageFont, ImageDraw, Image
 import numpy as np
 
+
 class Text:
     font_path = "./Skrapbook.ttf"
     font = ImageFont.truetype(font_path, 35)
@@ -18,9 +19,11 @@ class Text:
         draw.text((coordinates), text, font=font, fill=color)
 
         return Text.pillow2cv(pil_image)
-    
+
     @staticmethod
-    def putTextCenter(img, text, y, offsetX=0, size=35, color=(255, 255, 255), thickness=2):
+    def putTextCenter(
+        img, text, y, offsetX=0, size=35, color=(255, 255, 255), thickness=2
+    ):
         width = 1280 - offsetX
 
         font = Text.font if size == 35 else ImageFont.truetype("./Skrapbook.ttf", size)
@@ -30,12 +33,21 @@ class Text:
         draw = ImageDraw.Draw(pil_image)
         _, _, textWidth, _ = draw.textbbox((0, 0), text, font=font)
         medium = int((width - textWidth) / 2)
-        draw.text((( medium + offsetX ), y), text, font=font, fill=color)
+        draw.text(((medium + offsetX), y), text, font=font, fill=color)
 
         return Text.pillow2cv(pil_image)
-    
+
     @staticmethod
-    def putTextBox(img, text, coordinates, width, height, size=35, color=(255, 255, 255), thickness=2):
+    def putTextBox(
+        img,
+        text,
+        coordinates,
+        width,
+        height,
+        size=35,
+        color=(255, 255, 255),
+        thickness=2,
+    ):
         pil_image = Text.cv2pillow(img)
         draw = ImageDraw.Draw(pil_image)
 
@@ -57,20 +69,44 @@ class Text:
         x, y, h = 650, 150, 48
 
         draw.text((x, y - h), "Ranking", font=Text.font, fill=Text.NI_COLOR_RED)
-        
-        for person in top:
-            draw.line((x, y + h * top.index(person)-7, x + 480, y + h * top.index(person) - 7), fill=(30, 30, 30), width=1)
 
-            draw.text((x, y + h * top.index(person)), person["name"], font=Text.font, fill=color)
-            draw.text((x + 270, y + h * top.index(person)), str(person["score"]), font=Text.font, fill=color)
-            draw.text((x + 340, y + h * top.index(person)), person["draw"], font=Text.font, fill=color)
+        for person in top:
+            draw.line(
+                (
+                    x,
+                    y + h * top.index(person) - 7,
+                    x + 480,
+                    y + h * top.index(person) - 7,
+                ),
+                fill=(30, 30, 30),
+                width=1,
+            )
+
+            draw.text(
+                (x, y + h * top.index(person)),
+                person["name"],
+                font=Text.font,
+                fill=color,
+            )
+            draw.text(
+                (x + 270, y + h * top.index(person)),
+                str(person["score"]),
+                font=Text.font,
+                fill=color,
+            )
+            draw.text(
+                (x + 340, y + h * top.index(person)),
+                person["draw"],
+                font=Text.font,
+                fill=color,
+            )
 
         return Text.pillow2cv(pil_image)
 
     def cv2pillow(img):
         image = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         return Image.fromarray(image)
-    
+
     def pillow2cv(img):
         image = np.asarray(img)
         return cv2.cvtColor(image, cv2.COLOR_RGB2BGR)

@@ -11,7 +11,7 @@ import json
 
 class Dataset:
     def __init__(self):
-        f = open('data/labels2.json', 'r')
+        f = open("data/labels2.json", "r")
         self.labels_obj = json.load(f)
         self.labels = list(self.labels_obj.keys())
         f.close()
@@ -59,7 +59,7 @@ class Dataset:
             square_size = 470
             top, left = 140, 240
             # Cut, convert to grayscale, resize
-            canvas = canvas[top:(top+square_size), left:(left+square_size)]
+            canvas = canvas[top : (top + square_size), left : (left + square_size)]
             canvas = cv2.cvtColor(canvas, cv2.COLOR_BGR2GRAY)
             canvas = cv2.bitwise_not(canvas)
             canvas = cv2.resize(canvas, (28, 28))
